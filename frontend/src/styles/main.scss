@@ -1,0 +1,395 @@
+@use "variables" as *;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: $font-sans;
+  background: $color-bg;
+  color: $color-text;
+}
+
+a {
+  color: $color-primary;
+}
+
+button {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: $radius;
+  border: 1px solid $color-primary;
+  background: $color-primary;
+  color: white;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:hover:not(:disabled) {
+    background: $color-primary-dark;
+  }
+
+  &.danger {
+    border-color: $color-danger;
+    background: transparent;
+    color: $color-danger;
+
+    &:hover:not(:disabled) {
+      background: $color-danger;
+      color: white;
+    }
+  }
+}
+
+input,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.6rem;
+  border-radius: $radius;
+  border: 1px solid $color-border;
+  width: 100%;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.field-hint {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: $color-muted;
+}
+
+.field-error {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: $color-danger;
+}
+
+.app-main {
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+// Nav
+
+.nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+
+  &__brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: $color-text;
+  }
+
+  &__links {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+
+    button {
+      padding: 0.4rem 0.9rem;
+    }
+  }
+}
+
+// Auth pages
+
+.auth-page {
+  max-width: 380px;
+  margin: 2rem auto;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+// Error banner
+
+.error-banner {
+  background: #fdecea;
+  color: $color-critical;
+  border: 1px solid #f5c6c2;
+  border-radius: $radius;
+  padding: 0.8rem 1rem;
+  margin-bottom: 1rem;
+}
+
+// Spinner
+
+.spinner-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid $color-border;
+  border-top-color: $color-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// File drop
+
+.file-drop {
+  border: 2px dashed $color-border;
+  border-radius: $radius;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  color: $color-muted;
+  margin-bottom: 1rem;
+
+  &--dragging {
+    border-color: $color-primary;
+    background: rgba($color-primary, 0.05);
+  }
+
+  &__filename {
+    color: $color-text;
+    font-weight: 600;
+  }
+}
+
+// Staged progress
+
+.staged-progress {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  &__spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1.5rem;
+    border: 3px solid $color-border;
+    border-top-color: $color-primary;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  &__label {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  &__hint {
+    color: $color-muted;
+    font-size: 0.9rem;
+  }
+}
+
+// Score ring
+
+.score-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem 0;
+
+  &__track {
+    fill: none;
+    stroke: $color-border;
+    stroke-width: 10;
+  }
+
+  &__fill {
+    fill: none;
+    stroke: $color-primary;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+  }
+
+  &__text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    fill: $color-text;
+  }
+
+  &__label {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    color: $color-muted;
+  }
+}
+
+// Skill gaps
+
+.skill-gap-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.skill-gap {
+  border: 1px solid $color-border;
+  border-left-width: 4px;
+  border-radius: $radius;
+  padding: 0.8rem 1rem;
+  background: $color-surface;
+
+  &--critical {
+    border-left-color: $color-critical;
+  }
+  &--moderate {
+    border-left-color: $color-moderate;
+  }
+  &--minor {
+    border-left-color: $color-minor;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.3rem;
+  }
+
+  &__badge {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    color: $color-muted;
+  }
+
+  &__name {
+    font-weight: 700;
+  }
+
+  &__advice {
+    margin: 0;
+    color: $color-muted;
+  }
+}
+
+// Questions
+
+.question-card {
+  border: 1px solid $color-border;
+  border-radius: $radius;
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  background: $color-surface;
+
+  &__question {
+    font-weight: 700;
+    margin: 0 0 0.3rem;
+  }
+
+  &__intention {
+    color: $color-muted;
+    font-size: 0.85rem;
+    font-style: italic;
+    margin: 0 0 0.6rem;
+  }
+
+  &__toggle {
+    background: transparent;
+    color: $color-primary;
+    border: 1px solid $color-primary;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  &__answer {
+    margin-top: 0.6rem;
+    padding-left: 0.8rem;
+    border-left: 2px solid $color-border;
+  }
+}
+
+// Prep plan
+
+.prep-plan {
+  padding-left: 1.2rem;
+
+  &__day {
+    margin-bottom: 0.8rem;
+  }
+
+  &__heading {
+    font-weight: 700;
+  }
+}
+
+// History
+
+.history-list {
+  list-style: none;
+  padding: 0;
+
+  &__item a {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    margin-bottom: 0.6rem;
+    text-decoration: none;
+    color: $color-text;
+    background: $color-surface;
+  }
+
+  &__title {
+    flex: 1;
+    font-weight: 600;
+  }
+
+  &__score,
+  &__date {
+    color: $color-muted;
+    font-size: 0.9rem;
+  }
+}
+
+// Report detail
+
+.report-detail {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  section {
+    margin-top: 2rem;
+  }
+}

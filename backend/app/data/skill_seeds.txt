@@ -1,0 +1,187 @@
+Python
+JavaScript
+TypeScript
+Java
+C++
+C#
+C
+Go
+Golang
+Rust
+Ruby
+PHP
+Swift
+Kotlin
+Scala
+R
+MATLAB
+Perl
+Dart
+Elixir
+Haskell
+SQL
+NoSQL
+HTML
+CSS
+SASS
+LESS
+React
+React Native
+Vue
+Vue.js
+Angular
+Svelte
+Next.js
+Nuxt
+Redux
+jQuery
+Node.js
+Express
+Express.js
+FastAPI
+Django
+Flask
+Spring
+Spring Boot
+Laravel
+Ruby on Rails
+ASP.NET
+.NET
+GraphQL
+REST
+REST API
+gRPC
+WebSocket
+Postgres
+PostgreSQL
+MySQL
+SQLite
+MongoDB
+Redis
+Cassandra
+DynamoDB
+Elasticsearch
+Firebase
+Supabase
+Neon
+MariaDB
+Oracle
+SQL Server
+AWS
+Azure
+GCP
+Google Cloud
+Docker
+Kubernetes
+Terraform
+Ansible
+Jenkins
+GitHub Actions
+GitLab CI
+CircleCI
+CI/CD
+Git
+Linux
+Bash
+Shell Scripting
+Nginx
+Apache
+Kafka
+RabbitMQ
+Celery
+gRPC
+Microservices
+Serverless
+Lambda
+Machine Learning
+Deep Learning
+Neural Networks
+NLP
+Computer Vision
+TensorFlow
+PyTorch
+Keras
+scikit-learn
+Pandas
+NumPy
+Data Analysis
+Data Engineering
+ETL
+Airflow
+Spark
+Hadoop
+Tableau
+Power BI
+Excel
+Statistics
+A/B Testing
+Jupyter
+OpenAI API
+LLM
+Prompt Engineering
+LangChain
+Vector Databases
+pgvector
+Embeddings
+Agile
+Scrum
+Kanban
+Jira
+Confluence
+Figma
+Sketch
+UI/UX
+Product Management
+Project Management
+Testing
+Unit Testing
+Integration Testing
+Test Automation
+Selenium
+Cypress
+Jest
+Pytest
+QA
+Security
+OAuth
+JWT
+Encryption
+Penetration Testing
+DevOps
+SRE
+Monitoring
+Prometheus
+Grafana
+Logging
+System Design
+Object-Oriented Programming
+Functional Programming
+Design Patterns
+Data Structures
+Algorithms
+Distributed Systems
+Load Balancing
+Caching
+API Design
+Mobile Development
+iOS
+Android
+Flutter
+Xamarin
+WebRTC
+Blockchain
+Solidity
+Web3
+Cybersecurity
+Networking
+TCP/IP
+DNS
+CDN
+Salesforce
+SAP
+HubSpot
+Communication
+Leadership
+Stakeholder Management
+Technical Writing
+Mentoring

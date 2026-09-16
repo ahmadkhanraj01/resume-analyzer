@@ -1,0 +1,77 @@
+@page {
+    size: A4;
+    margin: 2cm;
+}
+
+body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.5;
+}
+
+h1 {
+    font-size: 22pt;
+    margin-bottom: 0.2em;
+}
+
+.score {
+    font-size: 40pt;
+    font-weight: bold;
+    color: #1a6b3c;
+}
+
+.score-label {
+    font-size: 11pt;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+h2 {
+    font-size: 15pt;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.2em;
+    margin-top: 1.4em;
+    page-break-after: avoid;
+}
+
+.skill-gap {
+    margin-bottom: 0.8em;
+    page-break-inside: avoid;
+}
+
+.severity-critical { color: #b3261e; font-weight: bold; }
+.severity-moderate { color: #b06a00; font-weight: bold; }
+.severity-minor { color: #1a6b3c; font-weight: bold; }
+
+.question {
+    margin-bottom: 1em;
+    page-break-inside: avoid;
+}
+
+.question .intention {
+    color: #555;
+    font-size: 9.5pt;
+    font-style: italic;
+}
+
+.question .answer {
+    margin-top: 0.3em;
+    padding-left: 1em;
+    border-left: 2px solid #ddd;
+}
+
+.prep-day {
+    margin-bottom: 0.6em;
+    page-break-inside: avoid;
+}
+
+.prep-day .focus {
+    font-weight: bold;
+}
+
+footer {
+    margin-top: 2em;
+    font-size: 8pt;
+    color: #999;
+}

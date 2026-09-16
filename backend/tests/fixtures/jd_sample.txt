@@ -1,0 +1,21 @@
+Senior Backend Engineer
+
+We are hiring a Senior Backend Engineer to own our core API platform.
+
+Responsibilities:
+- Design and build services in Python using FastAPI
+- Own our PostgreSQL schema, write migrations, and tune query performance
+- Deploy and operate services on Docker and Kubernetes in AWS
+- Improve CI/CD pipelines, we currently use GitHub Actions
+- Introduce caching with Redis where it measurably helps latency
+- Write tests with pytest and keep coverage high on critical paths
+- Mentor junior engineers and participate in system design reviews
+
+Requirements:
+- 5+ years building backend services in Python
+- Strong experience with FastAPI or Django
+- Deep knowledge of PostgreSQL, including indexing and query plans
+- Experience with Docker and Kubernetes in production
+- Familiarity with AWS, Terraform is a plus
+- Comfortable with Git and GitHub Actions or equivalent CI tooling
+- Bonus: experience with Kafka, GraphQL, or machine learning pipelines

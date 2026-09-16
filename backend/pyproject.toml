@@ -1,0 +1,16 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = [
+    "E501",
+    "UP046",  # PEP 695 generics; pydantic's Generic[T] is the documented pattern
+    "UP042",  # StrEnum vs (str, Enum); both work, this is what's used throughout
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
