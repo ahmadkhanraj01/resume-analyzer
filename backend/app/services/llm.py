@@ -19,6 +19,20 @@ logger = logging.getLogger(__name__)
 
 PROVIDERS = ("groq", "gemini")
 
+# The full report is a fair amount of JSON (up to 12 skill gaps, 16
+# questions, 14 prep days); the skill list is one short JSON array. Reasoning
+# models (see _REASONING_MODEL_MARKERS) spend part of this same budget on
+# hidden chain-of-thought before emitting content, so it needs real headroom
+# or the response gets cut off mid-JSON with finish_reason "length" and
+# never reaches the validator.
+REPORT_MAX_TOKENS = 6000
+SKILLS_MAX_TOKENS = 1024
+
+# Groq's `reasoning_effort` param only exists for its reasoning models
+# (currently the gpt-oss family) and is a 400 error on anything else, so it
+# is only sent when the configured model looks like one of those.
+_REASONING_MODEL_MARKERS = ("gpt-oss",)
+
 
 def _strip_fences(text: str) -> str:
     """Strips markdown code fences defensively, regardless of what the
@@ -32,31 +46,43 @@ def _strip_fences(text: str) -> str:
     return text.strip()
 
 
-def _call_groq(prompt: str, settings: Settings) -> str:
+def _call_groq(prompt: str, settings: Settings, max_tokens: int) -> str:
     from groq import Groq
 
     client = Groq(api_key=settings.groq_api_key)
+    kwargs = {}
+    if any(marker in settings.groq_model for marker in _REASONING_MODEL_MARKERS):
+        # Low effort: the task is following a fixed JSON schema, not
+        # reasoning depth, so spend as few hidden tokens on it as possible.
+        kwargs["reasoning_effort"] = "low"
     resp = client.chat.completions.create(
         model=settings.groq_model,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.4,
+        max_tokens=max_tokens,
+        **kwargs,
     )
     return resp.choices[0].message.content or ""
 
 
-def _call_gemini(prompt: str, settings: Settings) -> str:
+def _call_gemini(prompt: str, settings: Settings, max_tokens: int) -> str:
     from google import genai
+    from google.genai import types
 
     client = genai.Client(api_key=settings.gemini_api_key)
-    resp = client.models.generate_content(model=settings.gemini_model, contents=prompt)
+    resp = client.models.generate_content(
+        model=settings.gemini_model,
+        contents=prompt,
+        config=types.GenerateContentConfig(max_output_tokens=max_tokens),
+    )
     return resp.text or ""
 
 
-def _call_provider(provider: str, prompt: str, settings: Settings) -> str:
+def _call_provider(provider: str, prompt: str, settings: Settings, max_tokens: int) -> str:
     if provider == "groq":
-        return _call_groq(prompt, settings)
+        return _call_groq(prompt, settings, max_tokens)
     if provider == "gemini":
-        return _call_gemini(prompt, settings)
+        return _call_gemini(prompt, settings, max_tokens)
     raise ValueError(f"unknown provider {provider}")
 
 
@@ -70,7 +96,7 @@ def _try_report_on_provider(
     current_prompt = prompt
     for attempt in range(2):
         try:
-            raw = _call_provider(provider, current_prompt, settings)
+            raw = _call_provider(provider, current_prompt, settings, REPORT_MAX_TOKENS)
         except Exception:
             logger.warning("provider %s call failed", provider, exc_info=True)
             return None
@@ -116,7 +142,7 @@ def _try_skills_on_provider(provider: str, prompt: str, settings: Settings) -> l
     current_prompt = prompt
     for attempt in range(2):
         try:
-            raw = _call_provider(provider, current_prompt, settings)
+            raw = _call_provider(provider, current_prompt, settings, SKILLS_MAX_TOKENS)
         except Exception:
             logger.warning("provider %s call failed", provider, exc_info=True)
             return None

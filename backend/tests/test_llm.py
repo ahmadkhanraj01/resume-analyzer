@@ -65,7 +65,7 @@ def test_malformed_response_retries_once_then_succeeds():
     appended) returns valid JSON. Proves the self-correction retry path."""
     calls = {"count": 0}
 
-    def fake_groq(prompt: str, settings: Settings) -> str:
+    def fake_groq(prompt: str, settings: Settings, max_tokens: int) -> str:
         calls["count"] += 1
         if calls["count"] == 1:
             return "{not valid json at all"
