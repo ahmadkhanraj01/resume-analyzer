@@ -241,7 +241,7 @@ doesn't have, so `render_report_pdf` is imported lazily and its tests
 missing. The Dockerfile installs them via `apt-get`, matching WeasyPrint's
 own documented Debian dependency list, but that install has not been run:
 no Docker is available in this environment either. This is exactly the
-"most common deploy break" the checkpoint warns about — treat the first
+"most common deploy break" the checkpoint warns about. Treat the first
 Render deploy as the real test of this phase, not this local run.
 
 ---

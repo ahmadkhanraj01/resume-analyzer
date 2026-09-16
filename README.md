@@ -49,8 +49,14 @@ Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 - Backend: 49 tests passing, 2 skipped (PDF rendering needs system libraries
   not present on a bare Windows dev machine; see [Running tests](#running-tests)).
 - Frontend: builds cleanly, lints cleanly.
+- LLM providers: both Groq and Gemini keys work and have been exercised
+  live end-to-end (real report generation, and a genuine Groq-failure ->
+  Gemini-fallback run), not just mocked. Model defaults are `openai/gpt-oss-120b`
+  and `gemini-3.6-flash`. Both provider catalogs move fast, so if either
+  starts returning 404s, that model has likely been retired; check the
+  provider's current model list and update `backend/.env`.
 - Not yet done: an actual deploy to Render/Vercel/Supabase, and the real
-  20-pair threshold calibration described in `DESIGN.md` (Phase 9) — both
+  20-pair threshold calibration described in `DESIGN.md` (Phase 9). Both
   need accounts and real-world data this environment doesn't have.
 
 ## Running it locally
@@ -96,6 +102,32 @@ npm run dev
 ```
 
 The app is now at `http://localhost:5173`.
+
+### Running it again later
+
+Once the one-time setup above is done, starting both servers is just:
+
+```bash
+# terminal 1, from backend/
+.venv\Scripts\activate
+uvicorn main:app --reload
+
+# terminal 2, from frontend/
+npm run dev
+```
+
+Then open `http://localhost:5173`.
+
+A few things that trip people up:
+
+- **Both servers need to be running at once**, in two separate terminals;
+  the frontend can't reach the backend otherwise.
+- If PowerShell refuses to run `activate` (a script execution policy
+  error), either run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
+  first, or activate via `.venv\Scripts\activate.bat` from `cmd.exe` instead.
+- `--reload` watches Python files, not `.env`. If you edit `backend/.env`
+  (say, to add a real database URL), stop the server (`Ctrl+C`) and start
+  it again for the change to take effect.
 
 ### Running tests
 
