@@ -63,6 +63,10 @@ export default function NewAnalysis() {
   return (
     <div className="new-analysis-page">
       <h1>New analysis</h1>
+      <p className="page-lead">
+        Upload your resume and paste the job description. You get a match score, the skills to
+        close, likely interview questions, and a day-by-day plan.
+      </p>
       <ErrorBanner message={error}>
         {failed && canSubmit && (
           <button type="button" className="error-banner__action" onClick={submit}>
@@ -70,12 +74,12 @@ export default function NewAnalysis() {
           </button>
         )}
       </ErrorBanner>
-      <form onSubmit={handleSubmit} className="new-analysis-form">
+      <form onSubmit={handleSubmit} className="new-analysis-form card">
         <label>Resume</label>
         <FileDrop file={file} onChange={setFile} onError={setError} />
 
         <label htmlFor="jd">
-          Job description
+          Job description or target role
           <textarea
             id="jd"
             required
@@ -83,7 +87,7 @@ export default function NewAnalysis() {
             maxLength={JD_MAX}
             value={jobDescription}
             onChange={(e) => setJobDescription(e.target.value)}
-            placeholder="Paste the full job description here (at least 50 characters)."
+            placeholder="Paste the full job posting, requirements included. If you do not have one yet, describe the role you are targeting instead."
           />
           <span className="field-hint">
             {jobDescription.length}/{JD_MAX}

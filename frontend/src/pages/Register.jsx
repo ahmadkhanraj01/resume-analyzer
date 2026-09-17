@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { messageForError, fieldErrorsForError } from "../lib/errorMessages";
 import ErrorBanner from "../components/ErrorBanner";
+import PasswordInput from "../components/PasswordInput";
 
 export default function Register() {
   const { register } = useAuth();
@@ -32,39 +33,48 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <h1>Create an account</h1>
-      <ErrorBanner message={error} />
-      <form onSubmit={handleSubmit} className="auth-form">
-        <label>
-          Email
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-          />
-          {fieldErrors?.email && <span className="field-error">{fieldErrors.email}</span>}
-        </label>
-        <label>
-          Password
-          <input
-            type="password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="new-password"
-          />
-          <span className="field-hint">At least 8 characters.</span>
-        </label>
-        <button type="submit" disabled={submitting}>
-          {submitting ? "Creating account…" : "Create account"}
-        </button>
-      </form>
-      <p>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
+      <div className="auth-card">
+        <p className="auth-card__eyebrow">Get started</p>
+        <h1>Create an account</h1>
+        <p className="auth-card__lead">Free, and your reports stay private to you.</p>
+        <ErrorBanner message={error} />
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label htmlFor="register-email">
+            Email
+            <input
+              id="register-email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              placeholder="you@example.com"
+            />
+            {fieldErrors?.email && <span className="field-error">{fieldErrors.email}</span>}
+          </label>
+          <label htmlFor="register-password">
+            Password
+            <PasswordInput
+              id="register-password"
+              minLength={8}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+            />
+            {fieldErrors?.password ? (
+              <span className="field-error">{fieldErrors.password}</span>
+            ) : (
+              <span className="field-hint">At least 8 characters.</span>
+            )}
+          </label>
+          <button type="submit" className="btn-block" disabled={submitting}>
+            {submitting ? "Creating account…" : "Create account"}
+          </button>
+        </form>
+        <p className="auth-card__switch">
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Link } from "react-router-dom";
+import { Routes, Route, Navigate, Link, NavLink } from "react-router-dom";
 import { useAuth } from "./context/useAuth";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
@@ -13,12 +13,18 @@ function NavBar() {
   return (
     <nav className="nav-bar">
       <Link to="/new" className="nav-bar__brand">
-        Resume Analyzer
+        <span className="nav-bar__logo" aria-hidden="true">
+          RA
+        </span>
+        <span className="nav-bar__brand-text">Resume Analyzer</span>
       </Link>
       <div className="nav-bar__links">
-        <Link to="/new">New analysis</Link>
-        <Link to="/reports">History</Link>
-        <button type="button" onClick={logout}>
+        <NavLink to="/new">New analysis</NavLink>
+        <NavLink to="/reports">History</NavLink>
+        <span className="nav-bar__user" title={user.email}>
+          {user.email}
+        </span>
+        <button type="button" className="secondary" onClick={logout}>
           Log out
         </button>
       </div>

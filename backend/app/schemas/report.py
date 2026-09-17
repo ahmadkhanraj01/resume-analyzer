@@ -19,6 +19,15 @@ class Severity(str, Enum):
     minor = "minor"
 
 
+class ScoredAgainst(str, Enum):
+    """What the skill list came from. A real posting is the normal case; a
+    role profile means the user named a role and the skills are the typical
+    ones for it, so the score is against a generic bar, not a real listing."""
+
+    job_description = "job_description"
+    role_profile = "role_profile"
+
+
 class SkillGap(BaseModel):
     skill: str
     severity: Severity
@@ -51,10 +60,14 @@ class InterviewReport(BaseModel):
 
 
 class ReportOut(InterviewReport):
-    """What the API returns for a single report."""
+    """What the API returns for a single report. scored_against and
+    role_title are set by the analysis service, never by the LLM, which is
+    why they live here and not on InterviewReport."""
 
     id: str
     created_at: datetime
+    scored_against: ScoredAgainst = ScoredAgainst.job_description
+    role_title: str | None = None
 
 
 class ReportSummaryOut(BaseModel):
@@ -65,3 +78,4 @@ class ReportSummaryOut(BaseModel):
     title: str
     match_score: int
     created_at: datetime
+    scored_against: ScoredAgainst = ScoredAgainst.job_description

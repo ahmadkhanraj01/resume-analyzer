@@ -46,7 +46,9 @@ def test_create_report_full_flow(client, auth_headers):
         resp = _upload_resume(client, headers)
     assert resp.status_code == 201, resp.text
     body = resp.json()
-    assert 0 <= body["match_score"] <= 100
+    # FAKE_REPORT says 0; the deterministic scorer decides, and the fixture
+    # resume covers most of the sample JD.
+    assert body["match_score"] > 0
     assert body["title"] == "Backend Engineer Interview Prep"
     assert len(body["skill_gaps"]) >= 1
 
@@ -92,7 +94,7 @@ def test_list_reports_returns_trimmed_shape(client, auth_headers):
     body = resp.json()
     assert body["total"] == 1
     item = body["items"][0]
-    assert set(item.keys()) == {"id", "title", "match_score", "created_at"}
+    assert set(item.keys()) == {"id", "title", "match_score", "created_at", "scored_against"}
 
 
 def test_get_report_by_id(client, auth_headers):
@@ -203,3 +205,42 @@ def test_corrupted_pdf_upload_returns_422(client, auth_headers):
     )
     assert resp.status_code == 422
     assert resp.json()["error"]["code"] == "EXTRACTION_FAILED"
+
+
+def test_role_only_text_scores_against_role_profile(client, auth_headers):
+    headers = auth_headers()
+    jd = "I want to become an AI engineer and currently I am an AI intern at a startup."
+    with (
+        _mock_llm(),
+        patch.object(llm, "extract_skills_llm", return_value=[]),
+        patch.object(
+            llm, "infer_role_profile", return_value=("AI Engineer", ["Python", "PyTorch", "NLP"])
+        ),
+    ):
+        resp = _upload_resume(client, headers, jd=jd)
+    assert resp.status_code == 201, resp.text
+    body = resp.json()
+    assert body["scored_against"] == "role_profile"
+    assert body["role_title"] == "AI Engineer"
+    assert body["match_score"] > 0
+
+
+def test_text_with_no_skills_and_no_role_returns_no_skills_found(client, auth_headers):
+    headers = auth_headers()
+    jd = "Give me a job please, anything is fine, I just need something soon thanks."
+    with (
+        _mock_llm(),
+        patch.object(llm, "extract_skills_llm", return_value=[]),
+        patch.object(llm, "infer_role_profile", return_value=(None, [])),
+    ):
+        resp = _upload_resume(client, headers, jd=jd)
+    assert resp.status_code == 422
+    assert resp.json()["error"]["code"] == "NO_SKILLS_FOUND"
+
+
+def test_posting_scores_against_job_description(client, auth_headers):
+    headers = auth_headers()
+    with _mock_llm():
+        resp = _upload_resume(client, headers)
+    assert resp.json()["scored_against"] == "job_description"
+    assert resp.json()["role_title"] is None

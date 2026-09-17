@@ -9,6 +9,9 @@
   <h1>{{ title }}</h1>
   <div class="score-label">Match score</div>
   <div class="score">{{ match_score }}%</div>
+  {% if scored_against == "role_profile" %}
+  <p class="note">Scored against a typical {{ role_title or "role" }} profile, not a specific job posting.</p>
+  {% endif %}
 
   <h2>Skill gaps</h2>
   {% for gap in skill_gaps %}

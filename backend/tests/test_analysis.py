@@ -27,21 +27,28 @@ def _fake_report(gaps: list[dict]) -> InterviewReport:
     )
 
 
+def _run_report(report: InterviewReport) -> InterviewReport:
+    return _run(report).report
+
+
 JD = """Senior Backend Engineer. Must know Python, FastAPI, PostgreSQL, Docker,
 Kafka and Kubernetes. Terraform and Rust experience is a strong plus."""
 
 
-def _run(report: InterviewReport) -> InterviewReport:
+def _run(report: InterviewReport, jd: str = JD, role=(None, [])) -> analysis.AnalysisResult:
     resume = (FIXTURES / "resume_sample.pdf").read_bytes()
     with (
         patch.object(skills, "extract_skills_llm", return_value=[]),
-        patch.object(llm, "generate_report", return_value=report),
+        patch.object(llm, "infer_role_profile", return_value=role),
+        patch.object(llm, "generate_report", return_value=report) as gen,
     ):
-        return analysis.run_analysis(resume, JD, "", _settings()).report
+        result = analysis.run_analysis(resume, jd, "", _settings())
+        result.prompt_jd = gen.call_args.kwargs["job_description"]
+        return result
 
 
 def test_invented_skill_from_llm_is_dropped():
-    report = _run(
+    report = _run_report(
         _fake_report(
             [
                 {
@@ -59,7 +66,7 @@ def test_invented_skill_from_llm_is_dropped():
 def test_renamed_skill_keeps_scoring_numbers_not_llm_numbers():
     # The model wrote about "Postgres"; scoring knows "PostgreSQL". The gap
     # list must not carry the model's severity or similarity under either name.
-    report = _run(
+    report = _run_report(
         _fake_report(
             [{"skill": "Postgres", "severity": "critical", "similarity": 0.05, "advice": "x"}]
         )
@@ -70,7 +77,7 @@ def test_renamed_skill_keeps_scoring_numbers_not_llm_numbers():
 
 
 def test_gap_advice_is_taken_from_llm_by_name():
-    report = _run(
+    report = _run_report(
         _fake_report(
             [{"skill": "kafka", "severity": "minor", "similarity": 0.99, "advice": "Study Kafka."}]
         )
@@ -83,6 +90,37 @@ def test_gap_advice_is_taken_from_llm_by_name():
 
 
 def test_gaps_only_contain_non_minor_skills_and_are_capped():
-    report = _run(_fake_report([]))
+    report = _run_report(_fake_report([]))
     assert all(g.severity.value != "minor" for g in report.skill_gaps)
     assert len(report.skill_gaps) <= analysis.MAX_SKILL_GAPS
+
+
+def test_role_profile_fallback_when_jd_names_no_skills():
+    result = _run(
+        _fake_report([]),
+        jd="I want to become an AI engineer.",
+        role=("AI Engineer", ["Python", "PyTorch", "Kafka"]),
+    )
+    assert result.scored_against.value == "role_profile"
+    assert result.role_title == "AI Engineer"
+    assert result.report.match_score > 0
+    # The question writer sees the synthesized role description, not the bare sentence.
+    assert "Target role: AI Engineer" in result.prompt_jd
+    assert "PyTorch" in result.prompt_jd
+
+
+def test_no_skills_and_no_role_raises():
+    import pytest
+
+    from app.core.exceptions import NoSkillsFoundError
+
+    resume = (FIXTURES / "resume_sample.pdf").read_bytes()
+    with (
+        patch.object(skills, "extract_skills_llm", return_value=[]),
+        patch.object(llm, "infer_role_profile", return_value=(None, [])),
+        patch.object(llm, "generate_report") as gen,
+        pytest.raises(NoSkillsFoundError),
+    ):
+        analysis.run_analysis(resume, "give me a job", "", _settings())
+    # No report call is spent on unusable input.
+    gen.assert_not_called()

@@ -7,12 +7,11 @@ from fastapi import FastAPI
 from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from sqlmodel import SQLModel
 
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.exceptions import DomainError, domain_error_handler, request_validation_handler
-from app.db.session import engine
+from app.db.session import engine, sync_sqlite_schema
 from app.services import scoring
 
 
@@ -27,7 +26,7 @@ def create_app() -> FastAPI:
         # SQLite (local dev, tests) creates tables directly. Postgres in
         # production is managed through Alembic migrations instead.
         if settings.database_url.startswith("sqlite"):
-            SQLModel.metadata.create_all(engine)
+            sync_sqlite_schema(engine)
         # Load the embedding model now so the first analysis after a cold
         # start does not pay for it on top of Render's own wake-up time.
         await run_in_threadpool(scoring._model)

@@ -74,6 +74,8 @@ async def create_report(
         self_description=self_description,
         resume_text=result.resume_text,
         match_score=result.report.match_score,
+        scored_against=result.scored_against.value,
+        role_title=result.role_title,
         skill_gaps=[g.model_dump(mode="json") for g in result.report.skill_gaps],
         technical_qs=[q.model_dump(mode="json") for q in result.report.technical_qs],
         behavioral_qs=[q.model_dump(mode="json") for q in result.report.behavioral_qs],

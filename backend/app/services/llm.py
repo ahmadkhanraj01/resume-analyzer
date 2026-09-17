@@ -14,7 +14,12 @@ from pydantic import ValidationError as PydanticValidationError
 from app.core.config import Settings
 from app.core.exceptions import LLMUnavailableError
 from app.schemas.report import InterviewReport
-from app.services.prompts import report_prompt, retry_prompt, skill_extraction_prompt
+from app.services.prompts import (
+    report_prompt,
+    retry_prompt,
+    role_profile_prompt,
+    skill_extraction_prompt,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -192,3 +197,43 @@ def extract_skills_llm(job_description: str, settings: Settings) -> list[str]:
         if skills is not None:
             return skills
     return []
+
+
+def _parse_role_profile(raw: str) -> tuple[str | None, list[str]]:
+    parsed = json.loads(_strip_fences(raw))
+    if not isinstance(parsed, dict):
+        raise ValueError("expected a JSON object")
+    role = parsed.get("role")
+    skills = parsed.get("skills", [])
+    if role is not None and not isinstance(role, str):
+        raise ValueError("role must be a string or null")
+    if not isinstance(skills, list) or not all(isinstance(x, str) for x in skills):
+        raise ValueError("skills must be an array of strings")
+    role = role.strip() if role else None
+    skills = [x.strip() for x in skills if x.strip()]
+    if not role:
+        return None, []
+    return role, skills
+
+
+def infer_role_profile(text: str, settings: Settings) -> tuple[str | None, list[str]]:
+    """Fallback for a job description with no extractable skills. Returns
+    (role title, typical skills), or (None, []) if the text names no role or
+    every provider failed. Like extract_skills_llm, failure is not fatal
+    here; the caller decides what an empty result means."""
+    prompt = role_profile_prompt(text)
+    for provider in PROVIDERS:
+        current_prompt = prompt
+        for attempt in range(2):
+            try:
+                raw = _call_provider(provider, current_prompt, settings, SKILLS_MAX_TOKENS)
+            except Exception:
+                logger.warning("provider %s call failed", provider, exc_info=True)
+                break
+            try:
+                return _parse_role_profile(raw)
+            except (json.JSONDecodeError, ValueError) as e:
+                if attempt == 0:
+                    current_prompt = f"{prompt}\n\nYour previous response was invalid: {e}\nReturn the JSON object only."
+                    continue
+    return None, []

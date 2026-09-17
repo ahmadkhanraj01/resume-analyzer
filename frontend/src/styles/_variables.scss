@@ -1,20 +1,35 @@
-$color-bg: #f7f7f5;
+// Palette. Deep green primary on a warm off-white, with a slightly cooler
+// surface so cards lift off the page without heavy shadows.
+$color-bg: #f4f6f3;
+$color-bg-accent: #e6efe8;
 $color-surface: #ffffff;
-$color-text: #1a1a1a;
-$color-muted: #666666;
-$color-border: #e2e2e0;
+$color-surface-2: #f8faf8;
+$color-text: #16201a;
+$color-muted: #5f6b64;
+$color-border: #dfe5e0;
+$color-border-strong: #c9d2cb;
 
-$color-primary: #1a6b3c;
-$color-primary-dark: #124d2a;
+$color-primary: #1f7a45;
+$color-primary-dark: #165c34;
+$color-primary-soft: #e3f2e8;
+$color-primary-ring: rgba(31, 122, 69, 0.25);
 
 $color-critical: #b3261e;
-$color-moderate: #b06a00;
-$color-minor: #1a6b3c;
+$color-critical-soft: #fbe9e7;
+$color-moderate: #a35e00;
+$color-moderate-soft: #fff1dc;
+$color-minor: #1f7a45;
+$color-minor-soft: #e3f2e8;
 
 $color-danger: #b3261e;
 
-$radius: 8px;
-$max-width: 760px;
+$radius: 10px;
+$radius-lg: 16px;
+$max-width: 800px;
+
+$shadow-sm: 0 1px 2px rgba(22, 32, 26, 0.05), 0 1px 3px rgba(22, 32, 26, 0.06);
+$shadow-md: 0 4px 14px rgba(22, 32, 26, 0.08), 0 1px 3px rgba(22, 32, 26, 0.05);
+$shadow-lg: 0 16px 40px rgba(22, 32, 26, 0.12);
 
 $font-sans:
-  -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;

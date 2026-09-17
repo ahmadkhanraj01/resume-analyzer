@@ -98,22 +98,34 @@ export default function ReportDetail() {
           the verdict before the detail. */}
       <ScoreRing score={report.match_score} />
 
+      {report.scored_against === "role_profile" && (
+        <div className="notice" role="note">
+          <strong>Scored against a typical {report.role_title || "role"} profile.</strong> The text
+          you entered named a role rather than a specific posting, so the skills below are the ones
+          such jobs usually ask for. Paste a real job description for a score against that listing.
+        </div>
+      )}
+
       <section>
         <h2>Skill gaps</h2>
+        <p className="section-lead">
+          Skills the job description asks for that your resume does not clearly show, worst first.
+        </p>
         <SkillGapList gaps={report.skill_gaps} />
       </section>
 
       <section>
         <h2>Technical questions</h2>
+        <p className="section-lead">Answers are hidden so you can try each one first.</p>
         {report.technical_qs.map((q, i) => (
-          <QuestionCard key={i} {...q} />
+          <QuestionCard key={i} index={i} {...q} />
         ))}
       </section>
 
       <section>
         <h2>Behavioral questions</h2>
         {report.behavioral_qs.map((q, i) => (
-          <QuestionCard key={i} {...q} />
+          <QuestionCard key={i} index={i} {...q} />
         ))}
       </section>
 

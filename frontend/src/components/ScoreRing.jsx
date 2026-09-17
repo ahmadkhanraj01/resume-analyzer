@@ -4,9 +4,10 @@ export default function ScoreRing({ score }) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference * (1 - score / 100);
+  const tone = score >= 65 ? "good" : score >= 40 ? "partial" : "weak";
 
   return (
-    <div className="score-ring">
+    <div className={`score-ring score-ring--${tone}`}>
       <svg viewBox="0 0 120 120" width="140" height="140">
         <circle cx="60" cy="60" r={radius} className="score-ring__track" />
         <circle
@@ -23,6 +24,7 @@ export default function ScoreRing({ score }) {
         </text>
       </svg>
       <div className="score-ring__label">{scoreLabel(score)}</div>
+      <div className="score-ring__caption">Deterministic match score</div>
     </div>
   );
 }

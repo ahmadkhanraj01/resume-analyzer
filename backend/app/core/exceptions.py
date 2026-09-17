@@ -74,6 +74,16 @@ class PdfRenderError(DomainError):
     message = "The PDF could not be generated. Try again."
 
 
+class NoSkillsFoundError(DomainError):
+    code = "NO_SKILLS_FOUND"
+    status_code = 422
+    message = (
+        "No identifiable skills were found in the job description, and it does not "
+        "describe a recognizable role either. Paste the full posting, including its "
+        "requirements, or name the role you are targeting."
+    )
+
+
 class LLMUnavailableError(DomainError):
     code = "LLM_UNAVAILABLE"
     status_code = 503

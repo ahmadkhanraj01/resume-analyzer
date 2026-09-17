@@ -20,12 +20,22 @@ export default function StagedProgress() {
     return () => clearInterval(id);
   }, []);
 
-  const current = [...STAGES].reverse().find((s) => elapsed >= s.at) || STAGES[0];
+  const currentIndex = STAGES.reduce((acc, s, i) => (elapsed >= s.at ? i : acc), 0);
 
   return (
-    <div className="staged-progress">
+    <div className="staged-progress" role="status" aria-live="polite">
       <div className="staged-progress__spinner" />
-      <p className="staged-progress__label">{current.label}&hellip;</p>
+      <ol className="staged-progress__steps">
+        {STAGES.map((s, i) => {
+          const state = i < currentIndex ? "done" : i === currentIndex ? "active" : "pending";
+          return (
+            <li key={s.label} className={`staged-progress__step staged-progress__step--${state}`}>
+              <span className="staged-progress__dot" aria-hidden="true" />
+              {s.label}
+            </li>
+          );
+        })}
+      </ol>
       <p className="staged-progress__hint">
         This can take up to 25 seconds, longer if the server just woke up.
       </p>

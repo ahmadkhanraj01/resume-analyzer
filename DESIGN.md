@@ -81,6 +81,7 @@ One shape everywhere, produced by a single exception handler:
 | `FILE_TOO_LARGE`       | 413  | over 5 MB                                  |
 | `UNSUPPORTED_FILE`     | 415  | not PDF or DOCX                            |
 | `EXTRACTION_FAILED`    | 422  | file parsed but produced no usable text    |
+| `NO_SKILLS_FOUND`      | 422  | JD names no skills and no recognizable role |
 | `LLM_UNAVAILABLE`      | 503  | both providers failed                      |
 | `PDF_RENDER_FAILED`    | 500  | WeasyPrint could not render the report     |
 | `RATE_LIMITED`         | 429  | over the per-user analysis limit           |

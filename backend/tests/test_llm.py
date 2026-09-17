@@ -136,3 +136,25 @@ def test_extract_skills_llm_parses_json_array():
     with patch.object(llm, "_call_groq", return_value='["Python", "Docker", "AWS"]'):
         skills = llm.extract_skills_llm("some jd text", _settings())
     assert skills == ["Python", "Docker", "AWS"]
+
+
+def test_infer_role_profile_parses_object():
+    raw = '{"role": "Data Scientist", "skills": ["Python", " Pandas ", ""]}'
+    with patch.object(llm, "_call_groq", return_value=raw):
+        role, skills = llm.infer_role_profile("data scientist", _settings())
+    assert role == "Data Scientist"
+    assert skills == ["Python", "Pandas"]
+
+
+def test_infer_role_profile_null_role_means_no_profile():
+    with patch.object(llm, "_call_groq", return_value='{"role": null, "skills": ["x"]}'):
+        assert llm.infer_role_profile("hello", _settings()) == (None, [])
+
+
+def test_infer_role_profile_retries_then_falls_back_on_garbage():
+    with (
+        patch.object(llm, "_call_groq", return_value="not json") as groq,
+        patch.object(llm, "_call_gemini", side_effect=RuntimeError("down")),
+    ):
+        assert llm.infer_role_profile("ai engineer", _settings()) == (None, [])
+    assert groq.call_count == 2

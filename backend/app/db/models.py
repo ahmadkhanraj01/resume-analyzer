@@ -52,6 +52,10 @@ class Report(SQLModel, table=True):
     self_description: str = ""
     resume_text: str
     match_score: int
+    # See ReportOut. Stored as plain text so the enum can grow without a
+    # Postgres type change.
+    scored_against: str = Field(default="job_description", nullable=False)
+    role_title: str | None = Field(default=None, nullable=True)
     skill_gaps: list = Field(default_factory=list, sa_column=_json_column())
     technical_qs: list = Field(default_factory=list, sa_column=_json_column())
     behavioral_qs: list = Field(default_factory=list, sa_column=_json_column())

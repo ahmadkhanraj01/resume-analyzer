@@ -11,6 +11,9 @@ const ERROR_MESSAGES = {
   EXTRACTION_FAILED:
     "No readable text was found in that file. It looks like a scanned image; " +
     "upload a text-based PDF or DOCX instead.",
+  NO_SKILLS_FOUND:
+    "No skills were found in that text, and it does not describe a role either. " +
+    "Paste the full job posting with its requirements, or name the role you want.",
   PDF_RENDER_FAILED: "The PDF could not be generated. Try again.",
   LLM_UNAVAILABLE: "Analysis failed. Try again in a moment.",
   RATE_LIMITED: "You've hit the analysis limit for now. Try again later.",

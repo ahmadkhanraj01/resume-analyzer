@@ -14,7 +14,8 @@ import time
 from dataclasses import dataclass
 
 from app.core.config import Settings
-from app.schemas.report import InterviewReport, SkillGap
+from app.core.exceptions import NoSkillsFoundError
+from app.schemas.report import InterviewReport, ScoredAgainst, SkillGap
 from app.services import extract, llm, scoring, skills
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,8 @@ def _default_advice(skill: str) -> str:
 class AnalysisResult:
     resume_text: str
     report: InterviewReport
+    scored_against: ScoredAgainst = ScoredAgainst.job_description
+    role_title: str | None = None
 
 
 def run_analysis(
@@ -52,6 +55,19 @@ def run_analysis(
     t1 = time.perf_counter()
 
     skill_list, mentions = skills.extract_skills(job_description, settings)
+    scored_against = ScoredAgainst.job_description
+    role_title = None
+    if not skill_list:
+        # Nothing to score against. Usually the user typed a target role
+        # instead of pasting a posting, so try to build a typical skill
+        # profile for that role before giving up. Scoring a resume against
+        # an empty list would report 0% and mean nothing.
+        role_title, skill_list = llm.infer_role_profile(job_description, settings)
+        if not skill_list:
+            raise NoSkillsFoundError()
+        scored_against = ScoredAgainst.role_profile
+        mentions = dict.fromkeys(skill_list, 1)
+        job_description = _role_profile_description(role_title, skill_list, job_description)
     t2 = time.perf_counter()
     scoring_result = scoring.score(
         resume_text,
@@ -102,6 +118,26 @@ def run_analysis(
         )
         for s in weak[:MAX_SKILL_GAPS]
     ]
-    report = report.model_copy(update={"skill_gaps": gaps})
+    # match_score is set here as well as in llm.generate_report so the rule
+    # holds even if that wrapper is bypassed or replaced.
+    report = report.model_copy(
+        update={"skill_gaps": gaps, "match_score": scoring_result.match_score}
+    )
 
-    return AnalysisResult(resume_text=resume_text, report=report)
+    return AnalysisResult(
+        resume_text=resume_text,
+        report=report,
+        scored_against=scored_against,
+        role_title=role_title,
+    )
+
+
+def _role_profile_description(role: str, skill_list: list[str], original: str) -> str:
+    """Stands in for the job description in the report prompt when the user
+    gave a role rather than a posting, so the question writer has the same
+    kind of context it would get from a real listing."""
+    return (
+        f"Target role: {role}\n\n"
+        f"Typical requirements for this role: {', '.join(skill_list)}\n\n"
+        f"The candidate wrote: {original.strip()}"
+    )

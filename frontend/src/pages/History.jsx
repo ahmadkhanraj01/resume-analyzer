@@ -57,8 +57,19 @@ export default function History() {
             {items.map((r) => (
               <li key={r.id} className="history-list__item">
                 <Link to={`/reports/${r.id}`}>
-                  <span className="history-list__title">{r.title}</span>
-                  <span className="history-list__score">
+                  <span className="history-list__title">
+                    {r.title}
+                    {r.scored_against === "role_profile" && (
+                      <span className="tag" title="Scored against a typical role profile">
+                        Role profile
+                      </span>
+                    )}
+                  </span>
+                  <span
+                    className={`score-pill score-pill--${
+                      r.match_score >= 65 ? "good" : r.match_score >= 40 ? "partial" : "weak"
+                    }`}
+                  >
                     {r.match_score}% &middot; {scoreLabel(r.match_score)}
                   </span>
                   <span className="history-list__date">{formatDate(r.created_at)}</span>
