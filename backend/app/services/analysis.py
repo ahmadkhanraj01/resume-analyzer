@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from app.core.config import Settings
 from app.core.exceptions import NoSkillsFoundError
 from app.schemas.report import InterviewReport, ScoredAgainst, SkillGap
-from app.services import extract, llm, scoring, skills
+from app.services import careers, extract, llm, scoring, skills
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,15 @@ def run_analysis(
         # instead of pasting a posting, so try to build a typical skill
         # profile for that role before giving up. Scoring a resume against
         # an empty list would report 0% and mean nothing.
-        role_title, skill_list = llm.infer_role_profile(job_description, settings)
+        # A curated profile comes first: it is the rubric the career-fit
+        # panel used, so the report's score matches the panel's, and it
+        # costs no LLM call. The model only invents a profile for roles the
+        # curated set does not cover.
+        curated = careers.find_profile(job_description)
+        if curated:
+            role_title, skill_list = curated
+        else:
+            role_title, skill_list = llm.infer_role_profile(job_description, settings)
         if not skill_list:
             raise NoSkillsFoundError()
         scored_against = ScoredAgainst.role_profile
@@ -75,6 +83,7 @@ def run_analysis(
         mentions,
         covered_threshold=settings.covered_threshold,
         partial_threshold=settings.partial_threshold,
+        aliases=careers.aliases(),
     )
     t3 = time.perf_counter()
 

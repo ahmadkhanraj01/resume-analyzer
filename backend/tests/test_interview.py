@@ -277,3 +277,26 @@ def test_career_fit_rejects_unsupported_file(client, auth_headers):
         files={"resume": ("notes.txt", b"just some text " * 20, "text/plain")},
     )
     assert resp.status_code == 415
+
+
+def test_typed_curated_role_skips_llm_profile_and_matches_career_fit(client, auth_headers):
+    headers = auth_headers()
+    with (
+        _mock_llm(),
+        patch.object(skills, "extract_skills_llm", return_value=[]),
+        patch.object(llm, "infer_role_profile") as infer,
+    ):
+        resp = _upload_resume(client, headers, jd="I want to be a Backend Developer.")
+        with open(FIXTURES / "resume_sample.pdf", "rb") as f:
+            fit = client.post(
+                "/api/interview/careers",
+                headers=headers,
+                files={"resume": ("resume.pdf", f, "application/pdf")},
+            )
+    assert resp.status_code == 201, resp.text
+    infer.assert_not_called()
+    body = resp.json()
+    assert body["scored_against"] == "role_profile"
+    assert body["role_title"] == "Backend Developer"
+    by_role = {x["role"]: x["match_score"] for x in fit.json()["fits"]}
+    assert body["match_score"] == by_role["Backend Developer"]

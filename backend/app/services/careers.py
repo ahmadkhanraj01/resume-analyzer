@@ -7,6 +7,7 @@ or edit the JSON to change what the app considers a typical posting.
 """
 
 import json
+import re
 from functools import lru_cache
 from pathlib import Path
 
@@ -26,6 +27,23 @@ def _load() -> tuple[dict[str, list[str]], dict[str, list[str]]]:
 
 def profile_count() -> int:
     return len(_load()[0])
+
+
+def aliases() -> dict[str, list[str]]:
+    return _load()[1]
+
+
+def find_profile(text: str) -> tuple[str, list[str]] | None:
+    """The curated profile whose role name appears in the text, if any.
+    Longest name wins so "Machine Learning Engineer" is not read as some
+    shorter role it happens to contain. Used before asking the LLM to
+    invent a profile: the career-fit panel and the report must grade the
+    same target against the same rubric, or the two scores disagree."""
+    profiles, _ = _load()
+    for role in sorted(profiles, key=len, reverse=True):
+        if re.search(r"(?<!\w)" + re.escape(role) + r"(?!\w)", text, re.IGNORECASE):
+            return role, list(profiles[role])
+    return None
 
 
 def rank_careers(

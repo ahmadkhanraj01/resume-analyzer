@@ -12,6 +12,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
+from app.core import limiter as limiter_module
 from app.core.config import get_settings
 from app.core.deps import get_db
 from app.db import models  # noqa: F401  (registers tables on SQLModel.metadata)
@@ -37,6 +38,18 @@ def no_live_llm():
         patch.object(llm, "_call_gemini", _blocked),
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def fresh_rate_limiters():
+    """The limiters are module globals keyed by user id, and every test
+    registers the same address, so without this a test's 429 depends on
+    how many analyses earlier tests ran."""
+    limiter_module._limiter = None
+    limiter_module._auth_limiter = None
+    yield
+    limiter_module._limiter = None
+    limiter_module._auth_limiter = None
 
 
 @pytest.fixture(name="engine")

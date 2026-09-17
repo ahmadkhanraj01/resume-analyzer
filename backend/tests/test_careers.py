@@ -68,3 +68,21 @@ def test_alias_counts_as_literal_mention():
         aliases={"CI/CD": ["GitHub Actions"], "REST APIs": ["RESTful APIs"]},
     )
     assert all(s.severity.value == "minor" for s in result.skills)
+
+
+def test_find_profile_matches_role_name_in_text():
+    assert careers.find_profile("I want to be an AI Engineer.")[0] == "AI Engineer"
+    assert careers.find_profile("i want to be a machine learning engineer")[0] == (
+        "Machine Learning Engineer"
+    )
+    assert careers.find_profile("Give me a job please") is None
+
+
+def test_report_path_scores_same_as_career_fit(monkeypatch):
+    # The panel and the report must agree on the same target. Both go
+    # through run_analysis's scoring inputs; compare the scorer's number
+    # for the curated profile with the ranking's number for that role.
+    role, skill_list = careers.find_profile("I want to be a Backend Developer.")
+    direct = scoring.score(RESUME_TEXT, skill_list, aliases=careers.aliases())
+    ranked = {f.role: f.match_score for f in careers.rank_careers(RESUME_TEXT)}
+    assert direct.match_score == ranked[role]
