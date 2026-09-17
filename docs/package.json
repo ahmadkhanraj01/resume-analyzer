@@ -1,0 +1,11 @@
+{
+  "name": "resume-analyzer-docs-tools",
+  "private": true,
+  "description": "Exports docs/architecture.drawio to PNG. Not part of the app; nothing here ships.",
+  "scripts": {
+    "export": "node export-diagrams.js"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}
