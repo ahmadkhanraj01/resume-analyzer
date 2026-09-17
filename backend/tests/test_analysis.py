@@ -44,6 +44,7 @@ def _run(report: InterviewReport, jd: str = JD, role=(None, [])) -> analysis.Ana
     ):
         result = analysis.run_analysis(resume, jd, "", _settings())
         result.prompt_jd = gen.call_args.kwargs["job_description"]
+        result.prompt_missing = gen.call_args.kwargs["missing_skills"]
         return result
 
 
@@ -124,3 +125,38 @@ def test_no_skills_and_no_role_raises():
         analysis.run_analysis(resume, "give me a job", "", _settings())
     # No report call is spent on unusable input.
     gen.assert_not_called()
+
+
+ROLE_JD = "I want to be an AI Engineer."
+
+
+def test_gap_advice_matches_through_aliases_and_parentheticals():
+    # The curated AI Engineer profile names "Deep Learning" and "NLP", both
+    # missing from the backend fixture resume. The model answered under an
+    # alias and under the prompt's parenthesised form.
+    report = _run_report_for(
+        ROLE_JD,
+        [
+            {"skill": "CNN", "severity": "critical", "similarity": 0.1, "advice": "Build a CNN."},
+            {
+                "skill": "NLP (Natural Language Processing, LLM)",
+                "severity": "critical",
+                "similarity": 0.1,
+                "advice": "Fine-tune a small transformer.",
+            },
+        ],
+    )
+    by_skill = {g.skill: g.advice for g in report.skill_gaps}
+    assert by_skill["Deep Learning"] == "Build a CNN."
+    assert by_skill["NLP"] == "Fine-tune a small transformer."
+
+
+def test_prompt_shows_aliases_for_umbrella_skills():
+    result = _run(_fake_report([]), jd=ROLE_JD)
+    missing = result.prompt_missing
+    assert "Deep Learning (DL, Neural Networks, CNN)" in missing, missing
+    assert "PyTorch" in missing  # no aliases, so the bare name
+
+
+def _run_report_for(jd: str, gaps: list[dict]) -> InterviewReport:
+    return _run(_fake_report(gaps), jd=jd).report

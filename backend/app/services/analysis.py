@@ -10,6 +10,7 @@ as one blocking unit.
 """
 
 import logging
+import re
 import time
 from dataclasses import dataclass
 
@@ -100,13 +101,19 @@ def run_analysis(
 
     covered = [s.skill for s in scoring_result.skills if s.severity.value == "minor"]
     missing = [s.skill for s in scoring_result.skills if s.severity.value != "minor"]
+    # Umbrella names from the curated profiles ("Containers", "Cloud") mean
+    # little to the model on their own, so the prompt shows what each one
+    # stands for. The model tends to answer under those concrete names,
+    # which _advice_lookup maps back.
+    aliases = careers.aliases()
+    missing_for_prompt = [_with_aliases(skill, aliases) for skill in missing]
 
     report = llm.generate_report(
         resume_text=resume_text,
         job_description=job_description,
         self_description=self_description,
         covered_skills=covered,
-        missing_skills=missing,
+        missing_skills=missing_for_prompt,
         match_score=scoring_result.match_score,
         settings=settings,
     )
@@ -121,10 +128,11 @@ def run_analysis(
     )
 
     # Skill gaps are built from scoring, never from the model. The LLM only
-    # contributes the advice text, matched by name; a skill it renamed or
-    # invented has no scoring numbers behind it and is dropped rather than
-    # shipped with the model's own severity and similarity.
-    advice_by_skill = {g.skill.strip().lower(): g.advice for g in report.skill_gaps}
+    # contributes the advice text, matched by name or alias; a skill it
+    # renamed beyond recognition or invented has no scoring numbers behind
+    # it and is dropped rather than shipped with the model's own severity
+    # and similarity.
+    advice_by_skill = _advice_lookup(report.skill_gaps, missing, aliases)
     weak = sorted(
         (s for s in scoring_result.skills if s.severity.value != "minor"),
         key=lambda s: (s.severity.value != "critical", s.similarity),
@@ -134,7 +142,7 @@ def run_analysis(
             skill=s.skill,
             severity=s.severity,
             similarity=s.similarity,
-            advice=advice_by_skill.get(s.skill.lower(), _default_advice(s.skill)),
+            advice=advice_by_skill.get(s.skill, _default_advice(s.skill)),
         )
         for s in weak[:MAX_SKILL_GAPS]
     ]
@@ -150,6 +158,39 @@ def run_analysis(
         scored_against=scored_against,
         role_title=role_title,
     )
+
+
+def _with_aliases(skill: str, aliases: dict[str, list[str]]) -> str:
+    """ "Containers (Docker, Kubernetes, K8s)" for the prompt; the bare name
+    when the skill has no aliases."""
+    alts = aliases.get(skill)
+    return f"{skill} ({', '.join(alts)})" if alts else skill
+
+
+def _normalize_name(name: str) -> str:
+    # Lowercase, parenthetical dropped: the model often echoes the prompt's
+    # "Containers (Docker, Kubernetes)" form or writes just "Docker".
+    return re.sub(r"\s*\(.*\)\s*$", "", name).strip().lower()
+
+
+def _advice_lookup(
+    model_gaps: list[SkillGap], skills: list[str], aliases: dict[str, list[str]]
+) -> dict[str, str]:
+    """Maps each scored skill to the model's advice for it, accepting the
+    skill's own name, any alias, or either with a trailing parenthetical.
+    First match wins so a skill the model wrote about twice keeps the
+    first, and an alias shared by two skills goes to the first in scoring
+    order."""
+    name_to_skill: dict[str, str] = {}
+    for skill in skills:
+        for name in [skill, *aliases.get(skill, [])]:
+            name_to_skill.setdefault(_normalize_name(name), skill)
+    advice: dict[str, str] = {}
+    for gap in model_gaps:
+        skill = name_to_skill.get(_normalize_name(gap.skill))
+        if skill is not None and skill not in advice:
+            advice[skill] = gap.advice
+    return advice
 
 
 def _role_profile_description(role: str, skill_list: list[str], original: str) -> str:

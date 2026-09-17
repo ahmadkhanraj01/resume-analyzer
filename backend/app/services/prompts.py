@@ -59,8 +59,10 @@ Covered skills: {", ".join(covered_skills) or "none"}
 Missing or weak skills: {", ".join(missing_skills) or "none"}
 
 Build the technical questions, behavioral questions, and preparation plan
-around the missing or weak skills above. The match_score field is required
-by the schema but is ignored; fill it with your best estimate.
+around the missing or weak skills above. In skill_gaps, use each skill's
+name exactly as written in the list, without the parenthesised examples;
+the parentheses only show what the name covers. The match_score field is
+required by the schema but is ignored; fill it with your best estimate.
 """
 
 
