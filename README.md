@@ -11,6 +11,13 @@ you run anything.
 project is built and tested locally, ready to push to Render, Vercel, and a
 managed Postgres instance.
 
+![Career fit panel ranking a resume against curated role profiles](docs/career-fit.png)
+
+*The career-fit panel on the new-analysis page: the uploaded resume scored
+against 36 curated role profiles, with the skills it already names for each.
+Picking a role fills the target box and runs the full report against the
+same profile.*
+
 <!-- Add a screenshot of the report view here once deployed:
 ![Report view](docs/screenshot.png) -->
 
