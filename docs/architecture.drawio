@@ -87,43 +87,34 @@
         <mxGeometry x="908" y="398" width="188" height="46" as="geometry" />
       </mxCell>
       <mxCell id="db" value="&lt;b&gt;Postgres&lt;/b&gt; (Supabase or Neon)&lt;br&gt;SQLite locally and in tests&lt;br&gt;&lt;br&gt;users · reports (JSON columns for gaps, questions, plan; pruned to 50 per user)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#FFFFFF;strokeColor=#16201A;fontSize=11;" vertex="1" parent="1">
-        <mxGeometry x="420" y="520" width="220" height="110" as="geometry" />
+        <mxGeometry x="690" y="520" width="210" height="110" as="geometry" />
       </mxCell>
       <mxCell id="embed" value="&lt;b&gt;fastembed&lt;/b&gt; (local ONNX)&lt;br&gt;BAAI/bge-small-en-v1.5&lt;br&gt;loaded once, ~130 MB resident&lt;br&gt;no network call" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1DC;strokeColor=#A35E00;fontSize=11;" vertex="1" parent="1">
-        <mxGeometry x="660" y="520" width="200" height="110" as="geometry" />
+        <mxGeometry x="920" y="520" width="200" height="110" as="geometry" />
       </mxCell>
       <mxCell id="profiles" value="&lt;b&gt;data/role_profiles.json&lt;/b&gt;&lt;br&gt;36 curated roles, 12 to 16 skills each, alias map&lt;br&gt;&lt;br&gt;data/skill_seeds.txt" style="shape=note;whiteSpace=wrap;html=1;size=14;fillColor=#FFFFFF;strokeColor=#16201A;fontSize=11;" vertex="1" parent="1">
-        <mxGeometry x="880" y="520" width="200" height="110" as="geometry" />
+        <mxGeometry x="1150" y="520" width="200" height="110" as="geometry" />
       </mxCell>
       <mxCell id="llm_providers" value="&lt;b&gt;Groq&lt;/b&gt; (primary)&lt;br&gt;&lt;b&gt;Gemini&lt;/b&gt; (fallback)&lt;br&gt;HTTPS, JSON only, Pydantic-validated&lt;br&gt;&lt;i&gt;never produces the score&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FBE9E7;strokeColor=#B3261E;fontSize=11;" vertex="1" parent="1">
-        <mxGeometry x="1100" y="520" width="200" height="110" as="geometry" />
+        <mxGeometry x="444" y="520" width="220" height="110" as="geometry" />
       </mxCell>
-      <mxCell id="e_fe_api" value="HTTPS / JSON + multipart, Authorization: Bearer" style="endArrow=classic;html=1;rounded=0;strokeColor=#1F7A45;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="frontend" target="backend">
-        <mxGeometry relative="1" as="geometry">
-          <mxPoint x="340" y="190" as="sourcePoint" />
-          <mxPoint x="420" y="190" as="targetPoint" />
-        </mxGeometry>
-      </mxCell>
-      <mxCell id="e_scoring_embed" style="endArrow=classic;html=1;rounded=0;strokeColor=#A35E00;strokeWidth=1.5;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="svc_scoring" target="embed">
+      <mxCell id="e_fe_api" value="HTTPS · JSON + multipart&lt;br&gt;Authorization: Bearer" style="endArrow=classic;html=1;rounded=0;strokeColor=#1F7A45;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.2;entryX=0;entryY=0.11;" edge="1" parent="1" source="frontend" target="backend">
         <mxGeometry relative="1" as="geometry" />
       </mxCell>
-      <mxCell id="e_careers_profiles" style="endArrow=classic;html=1;rounded=0;strokeColor=#16201A;strokeWidth=1.5;exitX=0.9;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="svc_careers" target="profiles">
+      <mxCell id="e_scoring_embed" style="endArrow=classic;html=1;rounded=0;strokeColor=#A35E00;strokeWidth=1.5;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="svc_scoring" target="embed">
+        <mxGeometry relative="1" as="geometry" />
+      </mxCell>
+      <mxCell id="e_careers_profiles" style="endArrow=classic;html=1;rounded=0;strokeColor=#16201A;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0.5;entryY=0;" edge="1" parent="1" source="svc_careers" target="profiles">
         <mxGeometry relative="1" as="geometry">
           <Array as="points">
-            <mxPoint x="1076" y="470" />
-            <mxPoint x="980" y="470" />
+            <mxPoint x="1250" y="301" />
           </Array>
         </mxGeometry>
       </mxCell>
       <mxCell id="e_llm_prov" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#B3261E;strokeWidth=1.5;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="svc_llm" target="llm_providers">
-        <mxGeometry relative="1" as="geometry">
-          <Array as="points">
-            <mxPoint x="564" y="480" />
-            <mxPoint x="1200" y="480" />
-          </Array>
-        </mxGeometry>
+        <mxGeometry relative="1" as="geometry" />
       </mxCell>
-      <mxCell id="e_api_db" value="SQLModel session, every query filtered by user_id" style="endArrow=classic;html=1;rounded=0;strokeColor=#16201A;strokeWidth=1.5;exitX=0.16;exitY=1;entryX=0.5;entryY=0;fontSize=10;labelBackgroundColor=#FFFFFF;" edge="1" parent="1" source="backend" target="db">
+      <mxCell id="e_api_db" value="SQLModel session, every query filtered by user_id" style="endArrow=classic;html=1;rounded=0;strokeColor=#16201A;strokeWidth=1.5;fontSize=10;labelBackgroundColor=#FFFFFF;exitX=0.54;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="backend" target="db">
         <mxGeometry relative="1" as="geometry" />
       </mxCell>
       <mxCell id="legend_det" value="Deterministic path" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1DC;strokeColor=#A35E00;fontSize=10;" vertex="1" parent="1">
@@ -209,7 +200,7 @@
       <mxCell id="c5" value="200 { fits: [{role, match_score, covered_skills, missing_skills}], profile_count }" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F7A45;fontSize=11;" vertex="1" parent="1">
         <mxGeometry x="640" y="384" width="220" height="56" as="geometry" />
       </mxCell>
-      <mxCell id="c6" value="Frontend: CareerFit panel shows the top 5; picking one fills &quot;I want to be a &lt;role&gt;.&quot; which the analysis routes to the same profile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2E8;strokeColor=#1F7A45;fontSize=11;" vertex="1" parent="1">
+      <mxCell id="c6" value="Frontend: CareerFit panel shows the top 5; picking one fills &quot;I want to be a [role].&quot; which the analysis routes to the same profile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2E8;strokeColor=#1F7A45;fontSize=11;" vertex="1" parent="1">
         <mxGeometry x="640" y="460" width="220" height="70" as="geometry" />
       </mxCell>
       <mxCell id="ec1" style="endArrow=classic;html=1;strokeColor=#1F7A45;" edge="1" parent="1" source="c1" target="c2"><mxGeometry relative="1" as="geometry" /></mxCell>
