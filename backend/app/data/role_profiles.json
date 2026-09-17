@@ -1,0 +1,881 @@
+{
+  "_comment": "Curated skill profiles for the career-fit endpoint. Drafted by the LLM (Sept 2026) and reviewed by hand: core skills first, no grouped names, at most 16 per role. `aliases` lists other spellings a resume uses for the same skill; scoring treats a literal mention of any alias as a mention of the skill. Edit here, never at runtime.",
+  "aliases": {
+    "REST APIs": [
+      "REST",
+      "RESTful APIs",
+      "RESTful API",
+      "REST API"
+    ],
+    "Machine Learning": [
+      "ML"
+    ],
+    "Deep Learning": [
+      "DL",
+      "Neural Networks",
+      "CNN"
+    ],
+    "Computer Vision": [
+      "OpenCV",
+      "Image Processing"
+    ],
+    "NLP": [
+      "Natural Language Processing",
+      "LLM",
+      "LLMs",
+      "Transformers"
+    ],
+    "Scikit-learn": [
+      "sklearn",
+      "scikit learn"
+    ],
+    "PowerBI": [
+      "Power BI"
+    ],
+    "Node.js": [
+      "NodeJS"
+    ],
+    "Next.js": [
+      "NextJS"
+    ],
+    "CI/CD": [
+      "GitHub Actions",
+      "Jenkins",
+      "GitLab CI"
+    ],
+    "Version Control": [
+      "Git",
+      "GitHub",
+      "GitLab"
+    ],
+    "Firebase": [
+      "Firestore"
+    ],
+    "State Management": [
+      "Provider",
+      "Bloc",
+      "Riverpod",
+      "GetX",
+      "Redux",
+      "MobX"
+    ],
+    "Android": [
+      "Android Studio",
+      "Android SDK"
+    ],
+    "iOS": [
+      "Xcode",
+      "iOS SDK"
+    ],
+    "Microcontrollers": [
+      "Arduino",
+      "STM32",
+      "ESP32",
+      "MCU"
+    ],
+    "RTOS": [
+      "FreeRTOS",
+      "Zephyr"
+    ],
+    "FPGA": [
+      "Zynq",
+      "Xilinx",
+      "Altera"
+    ],
+    "Hardware Description Languages": [
+      "VHDL",
+      "Verilog",
+      "SystemVerilog",
+      "HDL"
+    ],
+    "PCB Design": [
+      "Altium",
+      "KiCad",
+      "Eagle",
+      "PCB layout"
+    ],
+    "Unit Testing": [
+      "pytest",
+      "JUnit",
+      "Jest",
+      "XCTest",
+      "unit tests"
+    ],
+    "Excel": [
+      "Microsoft Excel",
+      "Spreadsheets"
+    ],
+    "Microsoft Office": [
+      "MS Office",
+      "PowerPoint",
+      "Office 365"
+    ],
+    "Communication": [
+      "Communication Skills",
+      "Public Speaking"
+    ],
+    "Social Media Management": [
+      "Social Media",
+      "Instagram",
+      "Facebook",
+      "LinkedIn Marketing"
+    ],
+    "Event Management": [
+      "Event Planning",
+      "Event Coordination"
+    ],
+    "Leadership": [
+      "Team Lead"
+    ],
+    "Data Visualization": [
+      "Matplotlib",
+      "Seaborn",
+      "Plotly"
+    ],
+    "Agile": [
+      "Scrum",
+      "Kanban"
+    ],
+    "Cloud": [
+      "AWS",
+      "GCP",
+      "Azure",
+      "Google Cloud"
+    ],
+    "Containers": [
+      "Docker",
+      "Kubernetes",
+      "K8s"
+    ]
+  },
+  "profiles": [
+    {
+      "role": "AI Engineer",
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "Deep Learning",
+        "PyTorch",
+        "TensorFlow",
+        "NLP",
+        "Computer Vision",
+        "Scikit-learn",
+        "NumPy",
+        "Pandas",
+        "SQL",
+        "REST APIs",
+        "Containers",
+        "Cloud",
+        "Version Control",
+        "Linux"
+      ]
+    },
+    {
+      "role": "Machine Learning Engineer",
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "Deep Learning",
+        "PyTorch",
+        "TensorFlow",
+        "Scikit-learn",
+        "NumPy",
+        "Pandas",
+        "SQL",
+        "MLflow",
+        "Airflow",
+        "Containers",
+        "Cloud",
+        "Version Control",
+        "CI/CD"
+      ]
+    },
+    {
+      "role": "Data Scientist",
+      "skills": [
+        "Python",
+        "SQL",
+        "Statistics",
+        "Machine Learning",
+        "Pandas",
+        "NumPy",
+        "Scikit-learn",
+        "Data Visualization",
+        "R",
+        "Jupyter",
+        "Tableau",
+        "PowerBI",
+        "Spark",
+        "Deep Learning",
+        "Version Control"
+      ]
+    },
+    {
+      "role": "Data Analyst",
+      "skills": [
+        "SQL",
+        "Excel",
+        "Python",
+        "Statistics",
+        "Data Visualization",
+        "Tableau",
+        "PowerBI",
+        "Pandas",
+        "Data Cleaning",
+        "ETL",
+        "Data Modeling",
+        "R",
+        "DAX",
+        "Reporting"
+      ]
+    },
+    {
+      "role": "Data Engineer",
+      "skills": [
+        "Python",
+        "SQL",
+        "ETL",
+        "Airflow",
+        "Spark",
+        "Kafka",
+        "Data Warehousing",
+        "Snowflake",
+        "dbt",
+        "Hadoop",
+        "Cloud",
+        "Containers",
+        "Scala",
+        "Version Control",
+        "Data Modeling"
+      ]
+    },
+    {
+      "role": "Backend Developer",
+      "skills": [
+        "Python",
+        "Java",
+        "Node.js",
+        "SQL",
+        "PostgreSQL",
+        "NoSQL",
+        "REST APIs",
+        "Containers",
+        "Version Control",
+        "Linux",
+        "CI/CD",
+        "Unit Testing",
+        "Microservices",
+        "Redis",
+        "Cloud",
+        "Go"
+      ]
+    },
+    {
+      "role": "Frontend Developer",
+      "skills": [
+        "JavaScript",
+        "HTML",
+        "CSS",
+        "React",
+        "TypeScript",
+        "Responsive Design",
+        "REST APIs",
+        "Version Control",
+        "State Management",
+        "Next.js",
+        "Sass",
+        "Unit Testing",
+        "Webpack",
+        "Vue",
+        "Angular",
+        "Accessibility"
+      ]
+    },
+    {
+      "role": "Full Stack Developer",
+      "skills": [
+        "JavaScript",
+        "React",
+        "Node.js",
+        "HTML",
+        "CSS",
+        "TypeScript",
+        "SQL",
+        "MongoDB",
+        "REST APIs",
+        "Express",
+        "Version Control",
+        "Containers",
+        "Cloud",
+        "CI/CD",
+        "Unit Testing",
+        "GraphQL"
+      ]
+    },
+    {
+      "role": "Flutter Developer",
+      "skills": [
+        "Flutter",
+        "Dart",
+        "Firebase",
+        "State Management",
+        "REST APIs",
+        "Android",
+        "iOS",
+        "SQLite",
+        "Version Control",
+        "Material Design",
+        "Widget Testing",
+        "CI/CD",
+        "JSON",
+        "MVVM",
+        "App Store Deployment",
+        "Responsive Design"
+      ]
+    },
+    {
+      "role": "Android Developer",
+      "skills": [
+        "Kotlin",
+        "Java",
+        "Android",
+        "Jetpack Compose",
+        "MVVM",
+        "Retrofit",
+        "Room Database",
+        "Firebase",
+        "REST APIs",
+        "Gradle",
+        "Version Control",
+        "Material Design",
+        "Hilt",
+        "Coroutines",
+        "Unit Testing"
+      ]
+    },
+    {
+      "role": "iOS Developer",
+      "skills": [
+        "Swift",
+        "iOS",
+        "SwiftUI",
+        "UIKit",
+        "Objective-C",
+        "Combine",
+        "Core Data",
+        "REST APIs",
+        "Version Control",
+        "CocoaPods",
+        "MVVM",
+        "Unit Testing",
+        "App Store Deployment",
+        "JSON"
+      ]
+    },
+    {
+      "role": "DevOps Engineer",
+      "skills": [
+        "Linux",
+        "Docker",
+        "Kubernetes",
+        "CI/CD",
+        "Cloud",
+        "Terraform",
+        "Ansible",
+        "Bash",
+        "Python",
+        "Version Control",
+        "Prometheus",
+        "Grafana",
+        "Helm",
+        "Networking",
+        "Monitoring"
+      ]
+    },
+    {
+      "role": "Cloud Engineer",
+      "skills": [
+        "AWS",
+        "Azure",
+        "GCP",
+        "Terraform",
+        "Containers",
+        "Linux",
+        "CI/CD",
+        "Networking",
+        "Python",
+        "Bash",
+        "Infrastructure as Code",
+        "Monitoring",
+        "Version Control",
+        "Cloud Security",
+        "Cost Optimization"
+      ]
+    },
+    {
+      "role": "Site Reliability Engineer",
+      "skills": [
+        "Linux",
+        "Python",
+        "Go",
+        "Bash",
+        "Kubernetes",
+        "Docker",
+        "Prometheus",
+        "Grafana",
+        "Terraform",
+        "CI/CD",
+        "Cloud",
+        "Incident Management",
+        "Monitoring",
+        "Networking",
+        "Automation"
+      ]
+    },
+    {
+      "role": "Cybersecurity Analyst",
+      "skills": [
+        "Network Security",
+        "SIEM",
+        "Incident Response",
+        "Vulnerability Assessment",
+        "Linux",
+        "Windows",
+        "TCP/IP",
+        "Wireshark",
+        "Nmap",
+        "Python",
+        "Firewalls",
+        "Splunk",
+        "Threat Hunting",
+        "Risk Assessment",
+        "Malware Analysis",
+        "ISO 27001"
+      ]
+    },
+    {
+      "role": "Penetration Tester",
+      "skills": [
+        "Kali Linux",
+        "Metasploit",
+        "Burp Suite",
+        "Nmap",
+        "Wireshark",
+        "OWASP",
+        "Python",
+        "Bash",
+        "Vulnerability Assessment",
+        "Web Application Security",
+        "Active Directory",
+        "Exploit Development",
+        "TCP/IP",
+        "Social Engineering",
+        "Report Writing"
+      ]
+    },
+    {
+      "role": "Embedded Systems Engineer",
+      "skills": [
+        "C",
+        "C++",
+        "Microcontrollers",
+        "RTOS",
+        "Embedded Linux",
+        "UART",
+        "SPI",
+        "I2C",
+        "ARM Cortex",
+        "PCB Design",
+        "Debugging",
+        "Assembly",
+        "MATLAB",
+        "Version Control",
+        "CAN",
+        "Python"
+      ]
+    },
+    {
+      "role": "FPGA Engineer",
+      "skills": [
+        "Hardware Description Languages",
+        "VHDL",
+        "Verilog",
+        "SystemVerilog",
+        "FPGA",
+        "Vivado",
+        "Quartus",
+        "RTL Design",
+        "Timing Analysis",
+        "Synthesis",
+        "Simulation",
+        "ModelSim",
+        "Digital Logic",
+        "Embedded C",
+        "MATLAB",
+        "Tcl"
+      ]
+    },
+    {
+      "role": "Hardware Design Engineer",
+      "skills": [
+        "Verilog",
+        "VHDL",
+        "SystemVerilog",
+        "FPGA",
+        "ASIC",
+        "PCB Design",
+        "Schematic Capture",
+        "SPICE",
+        "Cadence",
+        "Timing Analysis",
+        "Signal Integrity",
+        "MATLAB",
+        "Digital Logic",
+        "Layout",
+        "Testing"
+      ]
+    },
+    {
+      "role": "Electrical Engineer",
+      "skills": [
+        "Circuit Design",
+        "MATLAB",
+        "PCB Design",
+        "Microcontrollers",
+        "Embedded C",
+        "Power Systems",
+        "Signal Processing",
+        "SPICE",
+        "AutoCAD",
+        "PLC Programming",
+        "Testing",
+        "Simulink",
+        "Soldering",
+        "Control Systems"
+      ]
+    },
+    {
+      "role": "QA Engineer",
+      "skills": [
+        "Test Automation",
+        "Selenium",
+        "Manual Testing",
+        "Test Cases",
+        "Jira",
+        "Python",
+        "Java",
+        "Postman",
+        "REST APIs",
+        "CI/CD",
+        "Agile",
+        "SQL",
+        "Unit Testing",
+        "Cypress",
+        "Bug Tracking",
+        "Version Control"
+      ]
+    },
+    {
+      "role": "Game Developer",
+      "skills": [
+        "C++",
+        "C#",
+        "Unity",
+        "Unreal Engine",
+        "Game Design",
+        "Gameplay Programming",
+        "OpenGL",
+        "Physics",
+        "3D Modeling",
+        "Blender",
+        "Version Control",
+        "Shaders",
+        "Animation",
+        "Agile",
+        "Multiplayer Networking"
+      ]
+    },
+    {
+      "role": "UI/UX Designer",
+      "skills": [
+        "Figma",
+        "Wireframing",
+        "Prototyping",
+        "User Research",
+        "Usability Testing",
+        "Interaction Design",
+        "Visual Design",
+        "Design Systems",
+        "Adobe XD",
+        "Sketch",
+        "Photoshop",
+        "Illustrator",
+        "HTML",
+        "CSS",
+        "Responsive Design",
+        "Accessibility"
+      ]
+    },
+    {
+      "role": "Product Manager",
+      "skills": [
+        "Agile",
+        "Roadmapping",
+        "User Research",
+        "Stakeholder Management",
+        "Prioritization",
+        "A/B Testing",
+        "Product Analytics",
+        "SQL",
+        "Jira",
+        "Wireframing",
+        "Market Analysis",
+        "KPIs",
+        "Communication",
+        "Excel",
+        "Leadership"
+      ]
+    },
+    {
+      "role": "Project Manager",
+      "skills": [
+        "Agile",
+        "Stakeholder Management",
+        "Risk Management",
+        "Budgeting",
+        "Jira",
+        "Microsoft Project",
+        "Leadership",
+        "Communication",
+        "Gantt Charts",
+        "Change Management",
+        "Microsoft Office",
+        "Planning",
+        "Event Management",
+        "Reporting",
+        "Waterfall"
+      ]
+    },
+    {
+      "role": "Business Analyst",
+      "skills": [
+        "Requirements Gathering",
+        "SQL",
+        "Excel",
+        "Data Analysis",
+        "Process Modeling",
+        "Stakeholder Management",
+        "Tableau",
+        "PowerBI",
+        "Jira",
+        "Agile",
+        "UML",
+        "Business Intelligence",
+        "Documentation",
+        "Communication",
+        "Visio"
+      ]
+    },
+    {
+      "role": "Technical Writer",
+      "skills": [
+        "Technical Writing",
+        "Documentation",
+        "Markdown",
+        "API Documentation",
+        "Style Guides",
+        "HTML",
+        "Version Control",
+        "Confluence",
+        "Jira",
+        "Editing",
+        "Research",
+        "XML",
+        "Sphinx",
+        "Communication",
+        "DITA"
+      ]
+    },
+    {
+      "role": "IT Support Specialist",
+      "skills": [
+        "Windows",
+        "Active Directory",
+        "Office 365",
+        "Ticketing Systems",
+        "Hardware Troubleshooting",
+        "Network Troubleshooting",
+        "DNS",
+        "DHCP",
+        "VPN",
+        "PowerShell",
+        "Linux",
+        "Customer Service",
+        "ITIL",
+        "Remote Desktop",
+        "Communication"
+      ]
+    },
+    {
+      "role": "Network Engineer",
+      "skills": [
+        "TCP/IP",
+        "Routing",
+        "Switching",
+        "Cisco",
+        "BGP",
+        "OSPF",
+        "VLANs",
+        "Firewalls",
+        "VPN",
+        "Wireshark",
+        "Network Security",
+        "Python",
+        "Ansible",
+        "LAN/WAN",
+        "Network Monitoring",
+        "Juniper"
+      ]
+    },
+    {
+      "role": "Database Administrator",
+      "skills": [
+        "SQL",
+        "PostgreSQL",
+        "MySQL",
+        "Oracle",
+        "SQL Server",
+        "Backup and Recovery",
+        "Performance Tuning",
+        "Replication",
+        "Linux",
+        "Bash",
+        "Data Modeling",
+        "Database Security",
+        "MongoDB",
+        "Cloud",
+        "Disaster Recovery"
+      ]
+    },
+    {
+      "role": "Digital Marketing Specialist",
+      "skills": [
+        "SEO",
+        "Google Analytics",
+        "Content Marketing",
+        "Social Media Management",
+        "Email Marketing",
+        "Google Ads",
+        "Copywriting",
+        "Data Analysis",
+        "A/B Testing",
+        "HubSpot",
+        "CRM",
+        "Canva",
+        "WordPress",
+        "Keyword Research",
+        "Marketing Automation",
+        "Communication"
+      ]
+    },
+    {
+      "role": "HR Coordinator",
+      "skills": [
+        "Recruiting",
+        "Onboarding",
+        "HRIS",
+        "Employee Relations",
+        "Benefits Administration",
+        "Payroll",
+        "Compliance",
+        "Microsoft Office",
+        "Excel",
+        "Communication",
+        "Organizational Skills",
+        "Interviewing",
+        "Applicant Tracking System",
+        "Event Management",
+        "Conflict Resolution"
+      ]
+    },
+    {
+      "role": "Accountant",
+      "skills": [
+        "Excel",
+        "QuickBooks",
+        "GAAP",
+        "Accounts Payable",
+        "Accounts Receivable",
+        "Financial Reporting",
+        "Reconciliation",
+        "Tax Preparation",
+        "Bookkeeping",
+        "Payroll",
+        "Audit",
+        "SAP",
+        "Financial Analysis",
+        "ERP"
+      ]
+    },
+    {
+      "role": "Financial Analyst",
+      "skills": [
+        "Excel",
+        "Financial Modeling",
+        "Valuation",
+        "Forecasting",
+        "Accounting",
+        "SQL",
+        "PowerPoint",
+        "Data Analysis",
+        "Python",
+        "Tableau",
+        "Bloomberg",
+        "Risk Management",
+        "Investment Research",
+        "Budgeting",
+        "Reporting"
+      ]
+    },
+    {
+      "role": "Sales Executive",
+      "skills": [
+        "CRM",
+        "Salesforce",
+        "Negotiation",
+        "Lead Generation",
+        "Account Management",
+        "Prospecting",
+        "Presentation",
+        "Communication",
+        "Pipeline Management",
+        "Cold Calling",
+        "HubSpot",
+        "Microsoft Office",
+        "Territory Management",
+        "Customer Relationship",
+        "Closing"
+      ]
+    },
+    {
+      "role": "Graphic Designer",
+      "skills": [
+        "Adobe Photoshop",
+        "Adobe Illustrator",
+        "Adobe InDesign",
+        "Figma",
+        "Typography",
+        "Color Theory",
+        "Branding",
+        "Layout Design",
+        "Canva",
+        "After Effects",
+        "Illustration",
+        "Print Design",
+        "Social Media Management",
+        "Video Editing",
+        "Sketch"
+      ]
+    }
+  ]
+}

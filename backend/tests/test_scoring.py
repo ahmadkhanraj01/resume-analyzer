@@ -52,8 +52,30 @@ def test_absent_unrelated_skill_is_critical():
 
 
 def test_aggregate_match_score_exact_value():
+    # Seven of ten skills are literal mentions (full credit), Kafka and
+    # GraphQL sit below the partial threshold (zero), Rust is far below.
     result = scoring.score(RESUME_TEXT, SKILLS, skill_mentions={"Python": 3, "FastAPI": 2})
-    assert result.match_score == 94
+    assert result.match_score == 74
+
+
+def test_resume_with_none_of_the_skills_scores_near_zero():
+    # The original formula (similarity / covered_threshold) gave unrelated
+    # text a floor around 65%. A resume that names none of the skills must
+    # not read as a mostly good match.
+    # GraphQL is left out: on this resume it lands at 0.6216, right on the
+    # noise ceiling that set PARTIAL_THRESHOLD, and would flip the severity
+    # assertion on a model update without meaning anything changed.
+    result = scoring.score(RESUME_TEXT, ["Rust", "Kafka", "Haskell", "Unity"])
+    assert result.match_score < 10
+    assert all(s.severity == Severity.critical for s in result.skills)
+
+
+def test_coverage_credit_is_anchored_at_partial_threshold():
+    assert scoring._coverage(0.50, 0.75, 0.62) == 0.0
+    assert scoring._coverage(0.62, 0.75, 0.62) == 0.0
+    assert abs(scoring._coverage(0.685, 0.75, 0.62) - 0.5) < 1e-9
+    assert scoring._coverage(0.75, 0.75, 0.62) == 1.0
+    assert scoring._coverage(0.90, 0.75, 0.62) == 1.0
 
 
 def test_weighting_gives_more_weight_to_repeated_skills():
@@ -104,3 +126,19 @@ def test_cosine_similarity_zero_vector_is_zero():
     v = np.array([0.0, 0.0, 0.0])
     w = np.array([1.0, 2.0, 3.0])
     assert scoring.cosine_similarity(v, w) == 0.0
+
+
+def test_literal_mention_tries_parenthesised_alternatives():
+    text = "Implemented state management with GetX, Provider and Riverpod. Used Git daily."
+    assert scoring._literal_mention("State Management (Provider, Bloc, Riverpod)", text)
+    assert scoring._literal_mention("Version Control (Git)", text)
+    assert scoring._literal_mention("Third-party Packages (e.g., http, dio)", text) is False
+    assert scoring._literal_mention("Testing (unit, widget, integration)", text) is False
+
+
+def test_short_acronyms_match_case_sensitively():
+    assert scoring._literal_mention("SOC", "Worked on a Zynq-7000 SoC platform") is False
+    assert scoring._literal_mention("SOC", "Monitored alerts in the SOC") is True
+    # Longer names and mixed-case names stay case-insensitive.
+    assert scoring._literal_mention("Python", "built in python and PYTHON") is True
+    assert scoring._literal_mention("MATLAB", "used matlab") is True

@@ -97,8 +97,20 @@ def role_profile_prompt(text: str) -> str:
 names no specific skills. Decide whether it describes a recognizable job
 role or career target. If it does, respond with the canonical role title
 and the specific skills, tools, and technologies a typical posting for that
-role requires, most important first, at most 20. If it does not describe
-any job role, respond with a null role and an empty list.
+role requires, most important first, between 12 and 20 of them. This
+applies to every field, not only software: for a marketing or HR role list
+the tools, methods, and competencies its postings ask for. A field or
+department name on its own ("marketing", "HR", "finance", "I want to work
+in human resources") is a career target too: answer with the most common
+entry-level role in that field. Respond with a null role and an empty list
+only when the text names no field, role, or profession at all.
+
+Each skill must be one short name written the way it appears on a resume:
+"Flutter", "Provider", "Riverpod", "Widget testing", "Git". Do not group
+skills, add parentheses or examples, or list the same skill twice under
+different names. Names are matched against resume text verbatim, so
+"State Management (Provider, Bloc)" never matches anything while "Provider"
+and "Bloc" do.
 
 Respond with a JSON object only, no markdown fences, no commentary:
 {{"role": "Machine Learning Engineer", "skills": ["Python", "PyTorch"]}}

@@ -27,3 +27,9 @@ export function downloadReportPdf(id) {
     .post(`/interview/${id}/pdf`, null, { responseType: "blob" })
     .then((r) => r.data);
 }
+
+export function suggestCareers(resume) {
+  const form = new FormData();
+  form.append("resume", resume);
+  return client.post("/interview/careers", form).then((r) => r.data);
+}

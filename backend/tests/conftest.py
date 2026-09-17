@@ -2,6 +2,7 @@
 SQLite database; nothing here touches the real Postgres database."""
 
 import os
+from unittest.mock import patch
 
 os.environ.setdefault("JWT_SECRET", "test-secret-do-not-use-in-prod-at-least-32-bytes")
 os.environ.setdefault("DATABASE_URL", "sqlite://")
@@ -14,7 +15,28 @@ from sqlmodel import Session, SQLModel, create_engine
 from app.core.config import get_settings
 from app.core.deps import get_db
 from app.db import models  # noqa: F401  (registers tables on SQLModel.metadata)
+from app.services import llm
 from main import app
+
+
+@pytest.fixture(autouse=True)
+def no_live_llm():
+    """Blocks the two provider calls so nothing in the suite reaches the
+    network even with provider keys in .env. Every helper above them
+    (extract_skills_llm, infer_role_profile, generate_report) still runs
+    its real parse and fallback logic and sees a failed provider. Tests
+    that want a specific response patch _call_groq or _call_gemini, or the
+    helper itself; an inner patch wins. Before this, router tests made live calls whenever .env had keys,
+    which broke the no-live-LLM rule in CLAUDE.md and made one test flaky."""
+
+    def _blocked(*_args, **_kwargs):
+        raise RuntimeError("live LLM calls are disabled in tests")
+
+    with (
+        patch.object(llm, "_call_groq", _blocked),
+        patch.object(llm, "_call_gemini", _blocked),
+    ):
+        yield
 
 
 @pytest.fixture(name="engine")

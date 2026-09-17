@@ -7,14 +7,18 @@ from app.core.deps import CurrentUserDep, DbDep, SettingsDep
 from app.core.exceptions import FileTooLargeError, NotFoundError, RateLimitedError, ValidationError
 from app.core.limiter import get_limiter
 from app.db.models import Report
+from app.schemas.career import CareerFitOut
 from app.schemas.common import Paginated
 from app.schemas.report import ReportOut, ReportSummaryOut
-from app.services import pdf
+from app.services import careers, extract, pdf
 from app.services.analysis import run_analysis
 
 router = APIRouter(prefix="/interview", tags=["interview"])
 
-JD_MIN_LENGTH = 50
+# Low enough to admit a bare target role ("I want to be an AI engineer"),
+# which the role-profile fallback in services/analysis.py exists to handle.
+# The old floor of 50 rejected exactly the input that path was built for.
+JD_MIN_LENGTH = 10
 JD_MAX_LENGTH = 20_000
 SELF_MAX_LENGTH = 2_000
 
@@ -90,6 +94,25 @@ async def create_report(
     _prune_old_reports(db, user.id, settings.max_reports_per_user)
 
     return ReportOut.model_validate(report, from_attributes=True)
+
+
+@router.post("/careers", response_model=CareerFitOut)
+async def suggest_careers(
+    settings: SettingsDep, user: CurrentUserDep, resume: UploadFile
+) -> CareerFitOut:
+    """Ranks the resume against every curated role profile. No LLM call and
+    nothing persisted, so it sits outside the analysis rate limit; the cost
+    is one PDF extraction and one embedding pass in the threadpool."""
+    resume_bytes = await resume.read(settings.max_upload_bytes + 1)
+    if len(resume_bytes) > settings.max_upload_bytes:
+        raise FileTooLargeError()
+
+    def _rank() -> list:
+        text = extract.to_text(resume_bytes)
+        return careers.rank_careers(text, settings.covered_threshold, settings.partial_threshold)
+
+    fits = await run_in_threadpool(_rank)
+    return CareerFitOut(fits=fits, profile_count=careers.profile_count())
 
 
 def _prune_old_reports(db, user_id: str, keep: int) -> None:

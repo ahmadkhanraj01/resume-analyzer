@@ -52,17 +52,28 @@ what matters; forced symbols produce `Password1!` and nothing else.
 | GET    | `/interview/{id}`           | yes  | -                             | `{report}` |
 | DELETE | `/interview/{id}`           | yes  | -                             | `204`     |
 | POST   | `/interview/{id}/pdf`       | yes  | -                             | PDF bytes |
+| POST   | `/interview/careers`        | yes  | multipart, `resume` only      | `{fits, profile_count}` |
 
 Multipart fields on `POST /interview/`:
 
 ```
 resume            file, PDF or DOCX, max 5 MB
-job_description   text, 50 to 20000 chars
+job_description   text, 10 to 20000 chars
 self_description  text, 0 to 2000 chars, optional
 ```
 
 The list endpoint returns a trimmed shape (id, title, match_score, created_at)
 rather than full reports. A history page does not need 8 KB of JSON per row.
+
+`POST /interview/careers` scores the resume against every curated role
+profile in `backend/app/data/role_profiles.json` and returns them best first,
+each as `{role, match_score, covered_skills, missing_skills}`. It runs the
+same deterministic scorer as an analysis, makes no LLM call, stores nothing,
+and is not counted against the analysis rate limit. The profiles were drafted
+by the model once and reviewed by hand; the file also carries an alias map
+("RESTful APIs" counts as "REST APIs") that the scorer applies as extra
+literal-mention spellings. Editing the file is the only way to change what
+the app calls a typical posting.
 
 ### Errors
 
@@ -169,24 +180,32 @@ resume is still present.
 
 ```python
 COVERED_THRESHOLD  = 0.75
-PARTIAL_THRESHOLD  = 0.55
+PARTIAL_THRESHOLD  = 0.62
 ```
 
 Above covered, the skill is present. Between the two, partial, mapped to
-`moderate`. Below partial, missing, mapped to `critical`. These are starting
-values and need calibration against twenty real resume and JD pairs before they
-mean anything. Record the calibration set in the repo.
+`moderate`. Below partial, missing, mapped to `critical`. Partial started at
+0.55 and moved to 0.62 after checking three real resumes: skills with no trace
+on the resume reached 0.61, so 0.55 called them partial. Still a small
+calibration set; keep checking against real pairs and record them in the repo.
 
 ### Aggregate score
 
 ```
 weight(skill)  = 1 + 0.5 * min(mentions_in_jd - 1, 2)
-raw            = Σ weight * min(similarity / COVERED_THRESHOLD, 1.0)
+credit(skill)  = 0                                   if similarity <= PARTIAL
+               = (similarity - PARTIAL) / (COVERED - PARTIAL)   between
+               = 1                                   if similarity >= COVERED
+raw            = Σ weight * credit
 match_score    = round(100 * raw / Σ weight)
 ```
 
-A skill named three times in a JD counts double a skill named once. Similarity
-is capped at 1.0 so an exact match cannot inflate past its weight.
+A skill named three times in a JD counts double a skill named once. Credit
+is anchored at the partial threshold, not at zero similarity: the embedding
+model scores unrelated text around 0.46 to 0.61, so dividing similarity by
+the covered threshold (the original formula) handed every resume a 65 point
+floor and three resumes with no ML content scored 74 to 77% for an AI
+Engineer role.
 
 The score is never rounded to a friendly number and never floored at some
 minimum. A 20% match should display as 20%.

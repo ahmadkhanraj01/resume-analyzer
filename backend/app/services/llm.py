@@ -34,6 +34,9 @@ PROVIDERS = ("groq", "gemini")
 REPORT_MAX_TOKENS = 6000
 SKILLS_MAX_TOKENS = 1024
 
+# Fewer than this for a recognised role is treated as an invalid response.
+MIN_ROLE_SKILLS = 8
+
 # Groq's `reasoning_effort` param only exists for its reasoning models
 # (currently the gpt-oss family) and is a 400 error on anything else, so it
 # is only sent when the configured model looks like one of those.
@@ -213,6 +216,12 @@ def _parse_role_profile(raw: str) -> tuple[str | None, list[str]]:
     skills = [x.strip() for x in skills if x.strip()]
     if not role:
         return None, []
+    if len(skills) < MIN_ROLE_SKILLS:
+        # A recognised role with a tiny list is a model shortcut, not a
+        # profile: "Flutter developer" once came back as ["Flutter"], which
+        # scored every resume that says Flutter at 100%. Raising here feeds
+        # the count back through the retry path.
+        raise ValueError(f"a recognised role needs at least {MIN_ROLE_SKILLS} skills")
     return role, skills
 
 

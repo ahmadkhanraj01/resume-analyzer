@@ -267,6 +267,26 @@ and the optional cron ping.
 
 ---
 
+## Phase 10: career fit [x]
+
+- Curated role profiles in `backend/app/data/role_profiles.json`, drafted by
+  the LLM once and reviewed by hand, with an alias map for spellings
+- `services/careers.py` ranks a resume against every profile with one
+  embedding pass and cached skill embeddings; no LLM call, nothing stored
+- `POST /interview/careers` and a Career fit panel on the new-analysis page
+  that lists the top five roles and fills the target role on click
+
+**Checkpoint:** a Flutter intern's resume ranks Flutter Developer first, an
+ML-heavy resume ranks AI Engineer first, and neither ranks Accountant in the
+top five.
+
+**Status:** done. Came out of running the three resumes in `Sample/` against
+a dozen typed role targets: the LLM-inferred profile for the same role
+changed from one request to the next, so the scores drifted. Checked-in
+profiles fix the drift and make ranking cheap enough to run on upload.
+
+---
+
 ## Deferred
 
 Not in this build. Listed so they stay out of scope rather than creeping in.

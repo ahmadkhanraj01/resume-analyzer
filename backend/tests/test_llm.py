@@ -139,11 +139,16 @@ def test_extract_skills_llm_parses_json_array():
 
 
 def test_infer_role_profile_parses_object():
-    raw = '{"role": "Data Scientist", "skills": ["Python", " Pandas ", ""]}'
+    raw = (
+        '{"role": "Data Scientist", "skills": ["Python", " Pandas ", "", "NumPy", '
+        '"SQL", "Statistics", "Scikit-learn", "Matplotlib", "Jupyter"]}'
+    )
     with patch.object(llm, "_call_groq", return_value=raw):
         role, skills = llm.infer_role_profile("data scientist", _settings())
     assert role == "Data Scientist"
-    assert skills == ["Python", "Pandas"]
+    # Whitespace is stripped and empty entries dropped.
+    assert skills[:2] == ["Python", "Pandas"]
+    assert "" not in skills
 
 
 def test_infer_role_profile_null_role_means_no_profile():
@@ -158,3 +163,17 @@ def test_infer_role_profile_retries_then_falls_back_on_garbage():
     ):
         assert llm.infer_role_profile("ai engineer", _settings()) == (None, [])
     assert groq.call_count == 2
+
+
+def test_infer_role_profile_rejects_tiny_skill_list_then_accepts_full_one():
+    tiny = '{"role": "Flutter Developer", "skills": ["Flutter"]}'
+    full = (
+        '{"role": "Flutter Developer", "skills": ["Flutter", "Dart", "Firebase", '
+        '"Provider", "Riverpod", "Bloc", "Git", "REST APIs"]}'
+    )
+    with patch.object(llm, "_call_groq", side_effect=[tiny, full]) as groq:
+        role, skills = llm.infer_role_profile("I want to be a Flutter developer", _settings())
+    assert role == "Flutter Developer"
+    assert len(skills) == 8
+    assert groq.call_count == 2
+    assert "at least 8 skills" in groq.call_args_list[1].args[0]

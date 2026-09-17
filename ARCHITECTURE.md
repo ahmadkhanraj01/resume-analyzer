@@ -137,7 +137,7 @@ The piece that distinguishes this from a thin LLM wrapper.
 2. Embed each JD skill and each resume chunk with `BAAI/bge-small-en-v1.5`
    through fastembed. ONNX runtime, no torch, roughly 130 MB resident.
 3. For each JD skill, take the max cosine similarity against resume chunks.
-4. Classify: above 0.75 covered, 0.55 to 0.75 partial, below 0.55 missing.
+4. Classify: above 0.75 covered, 0.62 to 0.75 partial, below 0.62 missing.
 5. Aggregate into a 0 to 100 score, weighting skills the JD repeats.
 
 No network call, no temperature, no drift. The same inputs always produce the
@@ -145,6 +145,11 @@ same score, which is the whole point.
 
 Thresholds live in `config.py`, not scattered through the module, because they
 will need tuning against real resumes.
+
+The same scorer backs the career-fit endpoint through `services/careers.py`:
+the resume is embedded once and scored against every profile in
+`data/role_profiles.json`, whose skill embeddings are cached per list. That
+keeps a 36-role ranking to about one embedding pass and no LLM call.
 
 ### LLM service
 

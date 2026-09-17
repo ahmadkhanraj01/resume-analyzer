@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # Scoring thresholds
     covered_threshold: float = 0.75
-    partial_threshold: float = 0.55
+    partial_threshold: float = 0.62
 
     # Rate limits
     analyses_per_hour: int = 10

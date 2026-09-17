@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from app.schemas.report import InterviewReport
-from app.services import llm
+from app.services import llm, skills
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -212,7 +212,7 @@ def test_role_only_text_scores_against_role_profile(client, auth_headers):
     jd = "I want to become an AI engineer and currently I am an AI intern at a startup."
     with (
         _mock_llm(),
-        patch.object(llm, "extract_skills_llm", return_value=[]),
+        patch.object(skills, "extract_skills_llm", return_value=[]),
         patch.object(
             llm, "infer_role_profile", return_value=("AI Engineer", ["Python", "PyTorch", "NLP"])
         ),
@@ -230,7 +230,7 @@ def test_text_with_no_skills_and_no_role_returns_no_skills_found(client, auth_he
     jd = "Give me a job please, anything is fine, I just need something soon thanks."
     with (
         _mock_llm(),
-        patch.object(llm, "extract_skills_llm", return_value=[]),
+        patch.object(skills, "extract_skills_llm", return_value=[]),
         patch.object(llm, "infer_role_profile", return_value=(None, [])),
     ):
         resp = _upload_resume(client, headers, jd=jd)
@@ -244,3 +244,36 @@ def test_posting_scores_against_job_description(client, auth_headers):
         resp = _upload_resume(client, headers)
     assert resp.json()["scored_against"] == "job_description"
     assert resp.json()["role_title"] is None
+
+
+def test_career_fit_ranks_resume_without_llm(client, auth_headers):
+    headers = auth_headers()
+    with open(FIXTURES / "resume_sample.pdf", "rb") as f:
+        resp = client.post(
+            "/api/interview/careers",
+            headers=headers,
+            files={"resume": ("resume.pdf", f, "application/pdf")},
+        )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["profile_count"] == len(body["fits"])
+    assert body["fits"][0]["role"] == "Backend Developer"
+    assert body["fits"][0]["match_score"] > body["fits"][-1]["match_score"]
+
+
+def test_career_fit_requires_auth(client):
+    with open(FIXTURES / "resume_sample.pdf", "rb") as f:
+        resp = client.post(
+            "/api/interview/careers", files={"resume": ("resume.pdf", f, "application/pdf")}
+        )
+    assert resp.status_code == 401
+
+
+def test_career_fit_rejects_unsupported_file(client, auth_headers):
+    headers = auth_headers()
+    resp = client.post(
+        "/api/interview/careers",
+        headers=headers,
+        files={"resume": ("notes.txt", b"just some text " * 20, "text/plain")},
+    )
+    assert resp.status_code == 415

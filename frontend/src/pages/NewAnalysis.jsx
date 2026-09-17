@@ -5,8 +5,9 @@ import { messageForError } from "../lib/errorMessages";
 import FileDrop from "../components/FileDrop";
 import StagedProgress from "../components/StagedProgress";
 import ErrorBanner from "../components/ErrorBanner";
+import CareerFit from "../components/CareerFit";
 
-const JD_MIN = 50;
+const JD_MIN = 10; // mirrors JD_MIN_LENGTH in backend/app/api/interview.py
 const JD_MAX = 20000;
 const SELF_MAX = 2000;
 
@@ -77,6 +78,14 @@ export default function NewAnalysis() {
       <form onSubmit={handleSubmit} className="new-analysis-form card">
         <label>Resume</label>
         <FileDrop file={file} onChange={setFile} onError={setError} />
+
+        <CareerFit
+          file={file}
+          onPick={(role) => {
+            setJobDescription(`I want to be a ${role}.`);
+            document.getElementById("jd")?.focus();
+          }}
+        />
 
         <label htmlFor="jd">
           Job description or target role
