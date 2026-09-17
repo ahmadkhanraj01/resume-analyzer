@@ -18,8 +18,12 @@ against 36 curated role profiles, with the skills it already names for each.
 Picking a role fills the target box and runs the full report against the
 same profile.*
 
-<!-- Add a screenshot of the report view here once deployed:
-![Report view](docs/screenshot.png) -->
+![Report view with the deterministic match score, skill gaps, and generated interview questions](docs/report-view.png)
+
+*The report for the same resume against the AI Engineer profile: the same
+71% the panel showed, the gaps that drive it, and the start of the
+generated questions. The full page continues with behavioral questions and
+a 14-day preparation plan.*
 
 ## Why this exists
 
