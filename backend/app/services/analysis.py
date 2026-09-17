@@ -24,6 +24,10 @@ logger = logging.getLogger(__name__)
 # up to skills.MAX_SKILLS entries, so the worst ones are kept.
 MAX_SKILL_GAPS = 12
 
+# Longer than this and the text is treated as a posting even if it names a
+# curated role; a real JD always mentions its own title.
+ROLE_TEXT_MAX_CHARS = 200
+
 
 def _default_advice(skill: str) -> str:
     # Used when the model wrote about a skill under a different name or not
@@ -54,25 +58,32 @@ def run_analysis(
     resume_text = extract.to_text(resume_bytes)
     t1 = time.perf_counter()
 
-    skill_list, mentions = skills.extract_skills(job_description, settings)
     scored_against = ScoredAgainst.job_description
     role_title = None
-    if not skill_list:
+    # A short text naming a curated role is a target, not a posting, even
+    # when it contains a skill word: "I want to be a Flutter Developer"
+    # would otherwise be scored against the single JD skill "Flutter" and
+    # come out at 100%. The curated profile is also the rubric the
+    # career-fit panel used, so the report's score matches the panel's,
+    # and it costs no LLM call.
+    curated = (
+        careers.find_profile(job_description)
+        if len(job_description) <= ROLE_TEXT_MAX_CHARS
+        else None
+    )
+    if curated:
+        role_title, skill_list = curated
+    else:
+        skill_list, mentions = skills.extract_skills(job_description, settings)
+    if not skill_list and not curated:
         # Nothing to score against. Usually the user typed a target role
-        # instead of pasting a posting, so try to build a typical skill
-        # profile for that role before giving up. Scoring a resume against
-        # an empty list would report 0% and mean nothing.
-        # A curated profile comes first: it is the rubric the career-fit
-        # panel used, so the report's score matches the panel's, and it
-        # costs no LLM call. The model only invents a profile for roles the
-        # curated set does not cover.
-        curated = careers.find_profile(job_description)
-        if curated:
-            role_title, skill_list = curated
-        else:
-            role_title, skill_list = llm.infer_role_profile(job_description, settings)
+        # the curated set does not cover, so ask the model for a typical
+        # profile before giving up. Scoring a resume against an empty list
+        # would report 0% and mean nothing.
+        role_title, skill_list = llm.infer_role_profile(job_description, settings)
         if not skill_list:
             raise NoSkillsFoundError()
+    if role_title:
         scored_against = ScoredAgainst.role_profile
         mentions = dict.fromkeys(skill_list, 1)
         job_description = _role_profile_description(role_title, skill_list, job_description)

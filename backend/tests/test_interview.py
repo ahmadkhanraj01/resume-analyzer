@@ -300,3 +300,16 @@ def test_typed_curated_role_skips_llm_profile_and_matches_career_fit(client, aut
     assert body["role_title"] == "Backend Developer"
     by_role = {x["role"]: x["match_score"] for x in fit.json()["fits"]}
     assert body["match_score"] == by_role["Backend Developer"]
+
+
+def test_typed_role_containing_a_seed_skill_still_uses_role_profile(client, auth_headers):
+    # "Flutter" is a seed skill, so the JD path would extract it and score
+    # the resume against that one word.
+    headers = auth_headers()
+    with _mock_llm(), patch.object(skills, "extract_skills_llm", return_value=[]):
+        resp = _upload_resume(client, headers, jd="I want to be a Flutter Developer.")
+    body = resp.json()
+    assert resp.status_code == 201, resp.text
+    assert body["scored_against"] == "role_profile"
+    assert body["role_title"] == "Flutter Developer"
+    assert body["match_score"] < 100
