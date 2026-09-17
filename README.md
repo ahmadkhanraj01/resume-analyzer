@@ -157,7 +157,7 @@ with the reasoning behind each choice is [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 
-- Backend: 102 tests passing. PDF rendering tests skip themselves on a
+- Backend: 104 tests passing. PDF rendering tests skip themselves on a
   machine without WeasyPrint's native libraries; see
   [Running tests](#running-tests).
 - Frontend: builds cleanly, lints cleanly.
