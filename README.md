@@ -60,6 +60,87 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design (with a
 draw.io diagram in [docs/architecture.drawio](docs/architecture.drawio)) and
 [DESIGN.md](DESIGN.md) for the API contract and scoring formula.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    subgraph FE["Frontend · React + Vite on Vercel"]
+        direction TB
+        pages["Pages: NewAnalysis, History, ReportDetail"]
+        careerfit["CareerFit panel"]
+        staged["StagedProgress (8 to 25 s wait)"]
+        axios["api/client.js · one axios instance · Bearer token"]
+    end
+
+    subgraph BE["Backend · FastAPI in Docker on Render (512 MB)"]
+        direction TB
+        subgraph API["app/api · thin routers"]
+            auth["auth"]
+            interview["interview · POST / · GET / · /{id} · /{id}/pdf"]
+            careersapi["interview · POST /careers"]
+        end
+        subgraph SVC["app/services · framework-free, threadpool"]
+            analysis["analysis · extract → rubric → score → report"]
+            careers["careers · rank vs every profile"]
+            extract["extract · pypdf, python-docx"]
+            skills["skills · JD → skill list"]
+            scoring["scoring · deterministic 0..100"]
+            llm["llm · Groq → validate → retry → Gemini"]
+            pdf["pdf · Jinja2 + WeasyPrint"]
+        end
+    end
+
+    db[("Postgres · users, reports")]
+    embed["fastembed · bge-small-en-v1.5 · local ONNX"]
+    profiles[/"data/role_profiles.json · 36 roles + aliases"/]
+    providers["Groq / Gemini · JSON only · never scores"]
+
+    FE -- "HTTPS · JSON + multipart" --> API
+    interview --> analysis
+    careersapi --> careers
+    analysis --> extract & skills & scoring & llm
+    careers --> extract & scoring
+    scoring --> embed
+    careers --> profiles
+    analysis --> profiles
+    llm --> providers
+    API --> db
+
+    classDef det fill:#FFF1DC,stroke:#A35E00,color:#16201A
+    classDef gen fill:#FBE9E7,stroke:#B3261E,color:#16201A
+    class scoring,embed,careers det
+    class llm,providers gen
+```
+
+Orange is the deterministic path, red the generative one. The scorer never
+calls the network; the LLM never produces a number that reaches the report.
+
+```mermaid
+flowchart TD
+    A["POST /api/interview/ · resume + target text"] --> B["extract.to_text"]
+    B --> C{"Pick the rubric"}
+    C -- "short text naming a curated role" --> D["role_profiles.json · no LLM"]
+    C -- "otherwise" --> E["skills.extract_skills · regex seeds + LLM pass"]
+    C -- "nothing found" --> F["llm.infer_role_profile · 8 to 20 names or 422"]
+    D & E & F --> G["scoring.score · credit 0 below 0.62, 1 at 0.75"]
+    G --> H["llm.generate_report · questions + plan · model score discarded"]
+    H --> I["persist, 201 { report }"]
+
+    J["POST /api/interview/careers · resume only"] --> K["extract.to_text"]
+    K --> L["careers.rank_careers · embed once, cached skill vectors"]
+    L --> M["200 { fits sorted best first }"]
+    M -. "pick a role" .-> A
+
+    classDef det fill:#FFF1DC,stroke:#A35E00,color:#16201A
+    classDef gen fill:#FBE9E7,stroke:#B3261E,color:#16201A
+    class D,G,L det
+    class F,H gen
+```
+
+An editable copy of both diagrams is in
+[docs/architecture.drawio](docs/architecture.drawio); the prose version
+with the reasoning behind each choice is [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Stack
 
 | Layer      | Choice                                             |
