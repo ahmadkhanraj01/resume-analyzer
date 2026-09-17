@@ -6,6 +6,7 @@ DESIGN.md's security section.
 """
 
 import io
+import zipfile
 
 from docx import Document
 from pypdf import PdfReader
@@ -31,13 +32,34 @@ def _sniff(data: bytes) -> str:
 
 
 def _extract_pdf(data: bytes) -> str:
-    reader = PdfReader(io.BytesIO(data))
-    return "\n".join(page.extract_text() or "" for page in reader.pages)
+    # A "%PDF-" header with a broken body raises from deep inside pypdf
+    # (PdfStreamError, PdfReadError, and the odd ValueError). Any of those
+    # means the file is not usable, which is the same outcome as no text.
+    try:
+        reader = PdfReader(io.BytesIO(data))
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    except Exception as e:
+        raise ExtractionFailedError() from e
 
 
 def _extract_docx(data: bytes) -> str:
-    doc = Document(io.BytesIO(data))
-    return "\n".join(p.text for p in doc.paragraphs)
+    # Every Office file and every plain .zip starts with the same "PK" magic,
+    # so the sniff alone cannot tell a DOCX from an XLSX. A real DOCX always
+    # carries word/document.xml; anything else is an unsupported type, not a
+    # parse failure.
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = archive.namelist()
+    except zipfile.BadZipFile as e:
+        raise UnsupportedFileError() from e
+    if "word/document.xml" not in names:
+        raise UnsupportedFileError()
+
+    try:
+        doc = Document(io.BytesIO(data))
+        return "\n".join(p.text for p in doc.paragraphs)
+    except Exception as e:
+        raise ExtractionFailedError() from e
 
 
 def to_text(data: bytes) -> str:

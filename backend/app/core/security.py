@@ -17,6 +17,16 @@ def verify_password(password: str, password_hash: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
 
 
+# Used when login hits an unknown email so that branch costs one bcrypt
+# verify like the known-email branch does. Without it, response time
+# reveals which emails are registered.
+_DUMMY_HASH = hash_password("timing-equalizer-not-a-real-password")
+
+
+def burn_password_check(password: str) -> None:
+    bcrypt.checkpw(password.encode("utf-8"), _DUMMY_HASH.encode("utf-8"))
+
+
 def create_access_token(subject: str, settings: Settings) -> str:
     now = datetime.now(UTC)
     payload = {

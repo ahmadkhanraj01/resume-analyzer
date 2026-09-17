@@ -13,17 +13,22 @@ export default function ReportDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
-  const [error, setError] = useState("");
+  // loadError replaces the page (there is nothing to show); actionError
+  // sits above the report so a failed download or delete keeps it visible.
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   useEffect(() => {
     getReport(id)
       .then(setReport)
-      .catch((err) => setError(messageForError(err)));
+      .catch((err) => setLoadError(messageForError(err)));
   }, [id]);
 
   async function handleDownload() {
+    setActionError("");
     setDownloading(true);
     try {
       const blob = await downloadReportPdf(id);
@@ -34,25 +39,26 @@ export default function ReportDetail() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      setError(messageForError(err));
+      setActionError(messageForError(err));
     } finally {
       setDownloading(false);
     }
   }
 
   async function handleDelete() {
-    if (!window.confirm("Delete this report? This cannot be undone.")) return;
+    setActionError("");
     setDeleting(true);
     try {
       await deleteReport(id);
       navigate("/reports");
     } catch (err) {
-      setError(messageForError(err));
+      setActionError(messageForError(err));
       setDeleting(false);
+      setConfirmingDelete(false);
     }
   }
 
-  if (error) return <ErrorBanner message={error} />;
+  if (loadError) return <ErrorBanner message={loadError} />;
   if (!report) return <Spinner />;
 
   return (
@@ -63,11 +69,30 @@ export default function ReportDetail() {
           <button type="button" onClick={handleDownload} disabled={downloading}>
             {downloading ? "Preparing PDF…" : "Download PDF"}
           </button>
-          <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
-            Delete
-          </button>
+          {confirmingDelete ? (
+            <span className="confirm-inline" role="alertdialog" aria-label="Confirm delete">
+              <span>Delete this report? This cannot be undone.</span>
+              <button type="button" className="danger" onClick={handleDelete} disabled={deleting}>
+                {deleting ? "Deleting…" : "Yes, delete"}
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setConfirmingDelete(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+            </span>
+          ) : (
+            <button type="button" className="danger" onClick={() => setConfirmingDelete(true)}>
+              Delete
+            </button>
+          )}
         </div>
       </div>
+
+      <ErrorBanner message={actionError} />
 
       {/* Score first, then gaps, then questions, then the plan: users want
           the verdict before the detail. */}

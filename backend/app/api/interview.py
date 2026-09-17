@@ -48,18 +48,24 @@ async def create_report(
             fields={"self_description": "too long"},
         )
 
-    limiter = get_limiter(settings.analyses_per_hour, settings.analyses_per_day)
-    if not limiter.check(user.id):
-        raise RateLimitedError()
-
-    resume_bytes = await resume.read()
+    # Read one byte past the limit instead of the whole upload: a 500 MB
+    # file would otherwise be held in memory on a 512 MB instance before the
+    # size check ever ran.
+    resume_bytes = await resume.read(settings.max_upload_bytes + 1)
     if len(resume_bytes) > settings.max_upload_bytes:
         raise FileTooLargeError()
 
-    result = await run_in_threadpool(
-        run_analysis, resume_bytes, job_description, self_description, settings
-    )
-    limiter.record(user.id)
+    limiter = get_limiter(settings.analyses_per_hour, settings.analyses_per_day)
+    if not limiter.acquire(user.id):
+        raise RateLimitedError()
+
+    try:
+        result = await run_in_threadpool(
+            run_analysis, resume_bytes, job_description, self_description, settings
+        )
+    except Exception:
+        limiter.release(user.id)
+        raise
 
     report = Report(
         user_id=user.id,
@@ -77,7 +83,9 @@ async def create_report(
     db.commit()
     db.refresh(report)
 
-    await run_in_threadpool(_prune_old_reports, db, user.id, settings.max_reports_per_user)
+    # Inline, not in the threadpool: the request's session is not thread-safe
+    # and the query is one indexed select.
+    _prune_old_reports(db, user.id, settings.max_reports_per_user)
 
     return ReportOut.model_validate(report, from_attributes=True)
 

@@ -27,7 +27,11 @@ VALID_REPORT_JSON = """{
 
 
 def _settings() -> Settings:
-    return Settings(jwt_secret="test", groq_api_key="fake", gemini_api_key="fake")
+    return Settings(
+        jwt_secret="test-secret-do-not-use-in-prod-at-least-32-bytes",
+        groq_api_key="fake",
+        gemini_api_key="fake",
+    )
 
 
 def test_generate_report_discards_llm_match_score():

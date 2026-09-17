@@ -3,7 +3,11 @@ instance."""
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# RFC 7518 section 3.2: an HMAC-SHA256 key should be at least 32 bytes.
+JWT_SECRET_MIN_BYTES = 32
 
 
 class Settings(BaseSettings):
@@ -33,10 +37,18 @@ class Settings(BaseSettings):
     # Rate limits
     analyses_per_hour: int = 10
     analyses_per_day: int = 30
+    auth_attempts_per_hour: int = 20
     max_reports_per_user: int = 50
 
     # Upload limits
     max_upload_bytes: int = 5 * 1024 * 1024
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def _jwt_secret_long_enough(cls, value: str) -> str:
+        if len(value.encode("utf-8")) < JWT_SECRET_MIN_BYTES:
+            raise ValueError(f"JWT_SECRET must be at least {JWT_SECRET_MIN_BYTES} bytes")
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -34,6 +34,12 @@ button {
     background: $color-primary-dark;
   }
 
+  &.secondary {
+    border-color: $color-border;
+    background: transparent;
+    color: $color-text;
+  }
+
   &.danger {
     border-color: $color-danger;
     background: transparent;
@@ -124,12 +130,42 @@ label {
 // Error banner
 
 .error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
   background: #fdecea;
   color: $color-critical;
   border: 1px solid #f5c6c2;
   border-radius: $radius;
   padding: 0.8rem 1rem;
   margin-bottom: 1rem;
+
+  &__action {
+    border-color: $color-critical;
+    background: transparent;
+    color: $color-critical;
+    padding: 0.4rem 0.9rem;
+
+    &:hover:not(:disabled) {
+      background: $color-critical;
+      color: white;
+    }
+  }
+}
+
+.confirm-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  font-size: 0.95rem;
+}
+
+.not-found {
+  text-align: center;
+  padding: 3rem 1rem;
 }
 
 // Spinner
@@ -371,6 +407,11 @@ label {
     color: $color-muted;
     font-size: 0.9rem;
   }
+}
+
+.history-page__count {
+  color: $color-muted;
+  font-size: 0.9rem;
 }
 
 // Report detail

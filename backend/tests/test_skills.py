@@ -5,7 +5,7 @@ from app.services import skills
 
 
 def _settings() -> Settings:
-    return Settings(jwt_secret="test")
+    return Settings(jwt_secret="test-secret-do-not-use-in-prod-at-least-32-bytes")
 
 
 JD = """We need a Senior Backend Engineer with strong Python and FastAPI
@@ -52,3 +52,28 @@ def test_extract_skills_caps_at_max():
     long_jd = " ".join(skills._load_seeds())  # every seed appears at least once
     found, _ = skills.extract_skills(long_jd, _settings(), use_llm=False)
     assert len(found) <= skills.MAX_SKILLS
+
+
+def test_single_letter_seed_ignores_initialisms():
+    assert "R" not in skills._seed_matches("Join our R&D team building tools in Go.")
+    assert "R" in skills._seed_matches("Statistical analysis in R and Python.")
+    assert "C" in skills._seed_matches("Firmware written in C, C++ and Rust.")
+
+
+def test_llm_skill_pass_is_cached_per_jd():
+    skills._llm_skills_cache.clear()
+    with patch.object(skills, "extract_skills_llm", return_value=["Go"]) as mock_llm:
+        skills.extract_skills(JD, _settings())
+        skills.extract_skills(JD, _settings())
+        assert mock_llm.call_count == 1
+        skills.extract_skills(JD + " and Rust.", _settings())
+        assert mock_llm.call_count == 2
+    skills._llm_skills_cache.clear()
+
+
+def test_llm_skill_pass_does_not_cache_empty_results():
+    skills._llm_skills_cache.clear()
+    with patch.object(skills, "extract_skills_llm", return_value=[]) as mock_llm:
+        skills.extract_skills(JD, _settings())
+        skills.extract_skills(JD, _settings())
+        assert mock_llm.call_count == 2

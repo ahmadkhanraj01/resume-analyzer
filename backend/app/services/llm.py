@@ -7,6 +7,7 @@ limits. One interface: generate_report(...) -> InterviewReport.
 
 import json
 import logging
+from functools import lru_cache
 
 from pydantic import ValidationError as PydanticValidationError
 
@@ -46,10 +47,25 @@ def _strip_fences(text: str) -> str:
     return text.strip()
 
 
-def _call_groq(prompt: str, settings: Settings, max_tokens: int) -> str:
+# Provider clients hold an HTTP connection pool; building one per call
+# throws that pool away each time. Keyed on the api key so a settings change
+# in tests still gets a fresh client.
+@lru_cache(maxsize=4)
+def _groq_client(api_key: str):
     from groq import Groq
 
-    client = Groq(api_key=settings.groq_api_key)
+    return Groq(api_key=api_key)
+
+
+@lru_cache(maxsize=4)
+def _gemini_client(api_key: str):
+    from google import genai
+
+    return genai.Client(api_key=api_key)
+
+
+def _call_groq(prompt: str, settings: Settings, max_tokens: int) -> str:
+    client = _groq_client(settings.groq_api_key)
     kwargs = {}
     if any(marker in settings.groq_model for marker in _REASONING_MODEL_MARKERS):
         # Low effort: the task is following a fixed JSON schema, not
@@ -66,14 +82,18 @@ def _call_groq(prompt: str, settings: Settings, max_tokens: int) -> str:
 
 
 def _call_gemini(prompt: str, settings: Settings, max_tokens: int) -> str:
-    from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = _gemini_client(settings.gemini_api_key)
     resp = client.models.generate_content(
         model=settings.gemini_model,
         contents=prompt,
-        config=types.GenerateContentConfig(max_output_tokens=max_tokens),
+        config=types.GenerateContentConfig(
+            max_output_tokens=max_tokens,
+            # No tools are passed, so disable automatic function calling
+            # explicitly; otherwise the SDK logs a warning on every call.
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+        ),
     )
     return resp.text or ""
 

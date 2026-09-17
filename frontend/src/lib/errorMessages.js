@@ -11,6 +11,7 @@ const ERROR_MESSAGES = {
   EXTRACTION_FAILED:
     "No readable text was found in that file. It looks like a scanned image; " +
     "upload a text-based PDF or DOCX instead.",
+  PDF_RENDER_FAILED: "The PDF could not be generated. Try again.",
   LLM_UNAVAILABLE: "Analysis failed. Try again in a moment.",
   RATE_LIMITED: "You've hit the analysis limit for now. Try again later.",
 };

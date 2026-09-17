@@ -3,7 +3,7 @@ SQLite database; nothing here touches the real Postgres database."""
 
 import os
 
-os.environ.setdefault("JWT_SECRET", "test-secret-do-not-use-in-prod")
+os.environ.setdefault("JWT_SECRET", "test-secret-do-not-use-in-prod-at-least-32-bytes")
 os.environ.setdefault("DATABASE_URL", "sqlite://")
 
 import pytest

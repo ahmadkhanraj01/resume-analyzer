@@ -10,6 +10,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from app.core.exceptions import PdfRenderError
+
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 
 _env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=True)
@@ -20,9 +22,15 @@ def render_report_pdf(report: dict) -> bytes:
     # libraries that ship via the Dockerfile's apt-get layer on Render, but
     # are not present on a bare Windows dev machine. A module-level import
     # would break `import app.main` for anyone who never touches PDF export.
-    from weasyprint import HTML
+    # Missing native libraries surface as OSError at import time; a template
+    # or layout problem surfaces from render or write_pdf. Either way the
+    # caller gets one domain error with the cause chained for the log.
+    try:
+        from weasyprint import HTML
 
-    css = (TEMPLATE_DIR / "report.css").read_text(encoding="utf-8")
-    template = _env.get_template("report.html.j2")
-    html = template.render(css=css, **report)
-    return HTML(string=html).write_pdf()
+        css = (TEMPLATE_DIR / "report.css").read_text(encoding="utf-8")
+        template = _env.get_template("report.html.j2")
+        html = template.render(css=css, **report)
+        return HTML(string=html).write_pdf()
+    except Exception as e:
+        raise PdfRenderError() from e

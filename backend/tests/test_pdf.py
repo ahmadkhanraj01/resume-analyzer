@@ -70,3 +70,16 @@ def test_render_report_pdf_handles_empty_lists():
     }
     pdf_bytes = render_report_pdf(empty)
     assert pdf_bytes.startswith(b"%PDF")
+
+
+def test_render_failure_raises_pdf_render_error(monkeypatch):
+    from app.core.exceptions import PdfRenderError
+    from app.services import pdf as pdf_module
+
+    class BrokenEnv:
+        def get_template(self, name):
+            raise RuntimeError("template exploded")
+
+    monkeypatch.setattr(pdf_module, "_env", BrokenEnv())
+    with pytest.raises(PdfRenderError):
+        render_report_pdf(SAMPLE_REPORT)

@@ -18,7 +18,11 @@ export default function FileDrop({ file, onChange, onError }) {
       onError?.("That file is over the 5 MB limit.");
       return;
     }
-    if (!ACCEPTED_TYPES.includes(candidate.type)) {
+    // Some browsers report an empty MIME type for .docx, so fall back to the
+    // extension when type is blank. The server still checks magic bytes.
+    const extOk = /\.(pdf|docx)$/i.test(candidate.name || "");
+    const typeOk = candidate.type ? ACCEPTED_TYPES.includes(candidate.type) : extOk;
+    if (!typeOk) {
       onError?.("Only PDF and DOCX files are supported.");
       return;
     }

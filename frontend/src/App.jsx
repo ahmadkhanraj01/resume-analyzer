@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, Link } from "react-router-dom";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -23,6 +23,17 @@ function NavBar() {
         </button>
       </div>
     </nav>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="not-found">
+      <h1>Page not found</h1>
+      <p>
+        That address does not exist. <Link to="/">Go home</Link>.
+      </p>
+    </div>
   );
 }
 
@@ -65,6 +76,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </>

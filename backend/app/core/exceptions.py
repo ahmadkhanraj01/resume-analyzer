@@ -6,6 +6,7 @@ main.py does the translation to HTTP.
 """
 
 from fastapi import Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
@@ -67,6 +68,12 @@ class ExtractionFailedError(DomainError):
     )
 
 
+class PdfRenderError(DomainError):
+    code = "PDF_RENDER_FAILED"
+    status_code = 500
+    message = "The PDF could not be generated. Try again."
+
+
 class LLMUnavailableError(DomainError):
     code = "LLM_UNAVAILABLE"
     status_code = 503
@@ -84,3 +91,21 @@ async def domain_error_handler(request: Request, exc: DomainError) -> JSONRespon
     if exc.fields:
         body["error"]["fields"] = exc.fields
     return JSONResponse(status_code=exc.status_code, content=body)
+
+
+async def request_validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """Pydantic body/form failures otherwise come back as FastAPI's default
+    {"detail": [...]} list, which the frontend cannot map to a message.
+    Fold them into the same VALIDATION_ERROR shape with one line per field."""
+    fields = {}
+    for err in exc.errors():
+        loc = [str(part) for part in err.get("loc", []) if part not in ("body", "query", "path")]
+        fields[".".join(loc) or "body"] = err.get("msg", "invalid")
+    body = {
+        "error": {
+            "code": "VALIDATION_ERROR",
+            "message": "The request was invalid.",
+            "fields": fields,
+        }
+    }
+    return JSONResponse(status_code=422, content=body)

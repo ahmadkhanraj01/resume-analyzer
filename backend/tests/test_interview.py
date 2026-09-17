@@ -145,3 +145,61 @@ def test_delete_foreign_report_returns_404(client, auth_headers):
     other_headers = auth_headers("other2@example.com")
     resp = client.delete(f"/api/interview/{report_id}", headers=other_headers)
     assert resp.status_code == 404
+
+
+def test_oversized_upload_returns_413_without_reading_it_all(client, auth_headers):
+    headers = auth_headers()
+    jd = (FIXTURES / "jd_sample.txt").read_text(encoding="utf-8")
+    big = b"%PDF-1.7\n" + b"0" * (5 * 1024 * 1024 + 10)
+    resp = client.post(
+        "/api/interview/",
+        headers=headers,
+        files={"resume": ("big.pdf", big, "application/pdf")},
+        data={"job_description": jd},
+    )
+    assert resp.status_code == 413
+    assert resp.json()["error"]["code"] == "FILE_TOO_LARGE"
+
+
+def test_failed_analysis_refunds_rate_limit_slot(client, auth_headers):
+    from app.core import limiter as limiter_module
+    from app.core.exceptions import LLMUnavailableError
+
+    headers = auth_headers()
+    limiter_module._limiter = limiter_module.RateLimiter(1, 10)
+    try:
+        with patch.object(llm, "generate_report", side_effect=LLMUnavailableError()):
+            resp = _upload_resume(client, headers)
+        assert resp.status_code == 503
+        # The failed run must not have consumed the user's only slot.
+        with _mock_llm():
+            resp = _upload_resume(client, headers)
+        assert resp.status_code == 201, resp.text
+        with _mock_llm():
+            resp = _upload_resume(client, headers)
+        assert resp.status_code == 429
+    finally:
+        limiter_module._limiter = None
+
+
+def test_skill_gaps_come_from_scoring_not_llm(client, auth_headers):
+    headers = auth_headers()
+    with _mock_llm():
+        resp = _upload_resume(client, headers)
+    gaps = resp.json()["skill_gaps"]
+    # FAKE_REPORT claims Kafka at 0.6/moderate; scoring decides, not the model.
+    assert all(not (g["skill"] == "Kafka" and g["similarity"] == 0.6) for g in gaps)
+    assert all(g["severity"] != "minor" for g in gaps)
+
+
+def test_corrupted_pdf_upload_returns_422(client, auth_headers):
+    headers = auth_headers()
+    jd = (FIXTURES / "jd_sample.txt").read_text(encoding="utf-8")
+    resp = client.post(
+        "/api/interview/",
+        headers=headers,
+        files={"resume": ("bad.pdf", b"%PDF-1.4\nbroken" * 50, "application/pdf")},
+        data={"job_description": jd},
+    )
+    assert resp.status_code == 422
+    assert resp.json()["error"]["code"] == "EXTRACTION_FAILED"

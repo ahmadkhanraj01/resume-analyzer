@@ -17,6 +17,9 @@ export default function NewAnalysis() {
   const [selfDescription, setSelfDescription] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // Set after a failed submit so the banner can offer a one-click retry
+  // with the file and JD still in state instead of an empty-looking form.
+  const [failed, setFailed] = useState(false);
 
   // Warn before unload while an analysis is in flight: the request can take
   // up to 25 seconds, and a refresh loses it entirely.
@@ -33,18 +36,24 @@ export default function NewAnalysis() {
   const jdTooShort = jobDescription.length > 0 && jobDescription.length < JD_MIN;
   const canSubmit = file && jobDescription.length >= JD_MIN && !submitting;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function submit() {
     if (!canSubmit) return;
     setError("");
+    setFailed(false);
     setSubmitting(true);
     try {
       const report = await createReport({ resume: file, jobDescription, selfDescription });
       navigate(`/reports/${report.id}`);
     } catch (err) {
       setError(messageForError(err));
+      setFailed(true);
       setSubmitting(false);
     }
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    submit();
   }
 
   if (submitting) {
@@ -54,7 +63,13 @@ export default function NewAnalysis() {
   return (
     <div className="new-analysis-page">
       <h1>New analysis</h1>
-      <ErrorBanner message={error} />
+      <ErrorBanner message={error}>
+        {failed && canSubmit && (
+          <button type="button" className="error-banner__action" onClick={submit}>
+            Try again
+          </button>
+        )}
+      </ErrorBanner>
       <form onSubmit={handleSubmit} className="new-analysis-form">
         <label>Resume</label>
         <FileDrop file={file} onChange={setFile} onError={setError} />

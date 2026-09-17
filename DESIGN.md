@@ -82,6 +82,7 @@ One shape everywhere, produced by a single exception handler:
 | `UNSUPPORTED_FILE`     | 415  | not PDF or DOCX                            |
 | `EXTRACTION_FAILED`    | 422  | file parsed but produced no usable text    |
 | `LLM_UNAVAILABLE`      | 503  | both providers failed                      |
+| `PDF_RENDER_FAILED`    | 500  | WeasyPrint could not render the report     |
 | `RATE_LIMITED`         | 429  | over the per-user analysis limit           |
 
 A report id belonging to another user returns 404, not 403. 403 confirms the id

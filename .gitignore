@@ -28,3 +28,5 @@ Thumbs.db
 # Local DB
 *.db
 *.sqlite3
+Sample/*
+!Sample/README.md
