@@ -63,6 +63,7 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── auth.py               [2] RegisterIn, LoginIn, TokenOut, UserOut
 │   │   ├── report.py             [5] InterviewReport + nested. THE contract.
+│   │   ├── career.py             [10] CareerFit, CareerFitOut
 │   │   └── common.py             [2] ErrorOut, Paginated
 │   │
 │   ├── services/
@@ -73,6 +74,7 @@ backend/
 │   │   ├── llm.py                [5] provider chain, validation, retry
 │   │   ├── prompts.py            [5] prompt templates, no logic
 │   │   ├── analysis.py           [6] orchestrates extract -> skills -> score -> llm
+│   │   ├── careers.py            [10] ranks a resume against role_profiles.json
 │   │   └── pdf.py                [8] Jinja2 + WeasyPrint
 │   │
 │   ├── templates/
@@ -80,7 +82,8 @@ backend/
 │   │   └── report.css            [8] print stylesheet
 │   │
 │   ├── data/
-│   │   └── skill_seeds.txt       [4] known technology names, one per line
+│   │   ├── skill_seeds.txt       [4] known technology names, one per line
+│   │   └── role_profiles.json    [10] curated skill lists per role, plus aliases
 │   │
 │   └── api/
 │       ├── __init__.py
@@ -158,7 +161,7 @@ frontend/
     ├── api/
     │   ├── client.js             [7] the ONLY axios instance
     │   ├── auth.js               [7] register, login, me
-    │   └── interview.js          [7] create, list, get, remove, pdf
+    │   └── interview.js          [7] create, list, get, remove, pdf, careers
     │
     ├── context/
     │   └── AuthContext.jsx       [7] user, token, loading, login, logout
@@ -178,6 +181,7 @@ frontend/
     │   ├── StagedProgress.jsx    [7] timed messages during analysis
     │   ├── ScoreRing.jsx         [7]
     │   ├── SkillGapList.jsx      [7] sorted by severity
+    │   ├── CareerFit.jsx         [10] top roles for the uploaded resume
     │   ├── QuestionCard.jsx      [7] collapsed answer by default
     │   ├── PrepPlan.jsx          [7]
     │   ├── ErrorBanner.jsx       [7] maps error codes to messages

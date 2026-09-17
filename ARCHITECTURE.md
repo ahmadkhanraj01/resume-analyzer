@@ -20,6 +20,10 @@ This split is the core design decision. Everything else follows from it.
 
 ## System diagram
 
+An editable version is in `docs/architecture.drawio` (open with
+[app.diagrams.net](https://app.diagrams.net) or the VS Code draw.io
+extension).
+
 ```
                  ┌──────────────────────────┐
                  │   React + Vite (Vercel)  │
@@ -34,6 +38,7 @@ This split is the core design decision. Everything else follows from it.
                  │             interview    │
                  │   services/ extract      │
                  │             scoring      │
+                 │             careers      │
                  │             llm          │
                  │             pdf          │
                  └───┬──────────┬───────┬───┘
@@ -181,8 +186,12 @@ POST /api/interview/  (multipart: resume file + jd + self_description)
   │
   ├─ deps.get_current_user      decode bearer token, load user
   ├─ extract.to_text(file)      pypdf or python-docx, in memory
-  ├─ scoring.score(text, jd)    embeddings, deterministic
-  ├─ llm.generate(text, jd, scoring_result)
+  ├─ pick the rubric
+  │     ├─ short text naming a curated role  -> role_profiles.json, no LLM
+  │     ├─ otherwise skills.extract_skills   -> regex seeds + LLM pass
+  │     └─ nothing found                     -> llm.infer_role_profile
+  ├─ scoring.score(text, skills, aliases)   embeddings, deterministic
+  ├─ llm.generate_report(text, jd, scoring_result)
   │     └─ Groq -> validate -> (retry once) -> fallback Gemini
   ├─ persist Report
   └─ 201 { report }
@@ -190,6 +199,24 @@ POST /api/interview/  (multipart: resume file + jd + self_description)
 
 Total latency is dominated by the LLM call, typically 8 to 25 seconds. The
 frontend must show progress, not a spinner that looks frozen.
+
+## Request flow: career fit
+
+```
+POST /api/interview/careers  (multipart: resume file only)
+  │
+  ├─ deps.get_current_user
+  ├─ extract.to_text(file)
+  ├─ careers.rank_careers(text)
+  │     └─ scoring.score_profiles: embed the resume once, cached skill
+  │        embeddings per profile, every profile scored and sorted
+  └─ 200 { fits: [{role, match_score, covered_skills, missing_skills}], profile_count }
+```
+
+No LLM call and nothing persisted, so it is not rate limited like an
+analysis and returns in well under a second once the model is warm. The
+same scorer and the same curated profile back a typed role in the analysis
+flow, which is why the two numbers agree.
 
 ---
 

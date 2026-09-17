@@ -1,9 +1,11 @@
 # Resume Analyzer
 
-Upload a resume, paste a job description, and get back a structured report:
-a deterministic match score, a per-skill gap analysis, technical and
-behavioral interview questions, and a day-by-day preparation plan. Export
-any report as a PDF.
+Upload a resume, paste a job description or just name the role you want,
+and get back a structured report: a deterministic match score, a per-skill
+gap analysis, technical and behavioral interview questions, and a day-by-day
+preparation plan. Export any report as a PDF. Not sure what to target? The
+career-fit panel ranks the resume against 36 curated role profiles before
+you run anything.
 
 **Live app:** not deployed yet. See [Deployment](#deployment) below; the
 project is built and tested locally, ready to push to Render, Vercel, and a
@@ -26,8 +28,25 @@ differently on every run. This one splits the work on purpose:
 - **The LLM only generates text that needs generating.** Interview
   questions, the reasoning behind them, and the prep plan. It never grades
   anything, and if it tries to return a score, that value is discarded.
+- **A score of 20% displays as 20%.** Credit for a skill starts at zero
+  below the partial threshold, so a resume with none of the skills scores
+  near zero rather than the 65 point floor an unanchored cosine similarity
+  gives. See DESIGN.md for the formula and the calibration notes.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and
+Three ways to give it a target:
+
+| Input | What it scores against |
+| ----- | ---------------------- |
+| A pasted job posting | Skills extracted from the posting (regex seed list plus an LLM pass) |
+| A role name the app knows ("I want to be an AI Engineer") | The curated profile in `backend/app/data/role_profiles.json`, no LLM call |
+| A role name it does not know | A profile the LLM writes on the spot, validated to 8 to 20 atomic skill names |
+
+The career-fit panel and the report use the same scorer and the same
+curated profile, so the score you see in the panel is the score the report
+gives for that role.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design (with a
+draw.io diagram in [docs/architecture.drawio](docs/architecture.drawio)) and
 [DESIGN.md](DESIGN.md) for the API contract and scoring formula.
 
 ## Stack
@@ -46,8 +65,9 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system design and
 
 Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 
-- Backend: 49 tests passing, 2 skipped (PDF rendering needs system libraries
-  not present on a bare Windows dev machine; see [Running tests](#running-tests)).
+- Backend: 102 tests passing. PDF rendering tests skip themselves on a
+  machine without WeasyPrint's native libraries; see
+  [Running tests](#running-tests).
 - Frontend: builds cleanly, lints cleanly.
 - LLM providers: both Groq and Gemini keys work and have been exercised
   live end-to-end (real report generation, and a genuine Groq-failure ->
@@ -55,9 +75,11 @@ Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
   and `gemini-3.6-flash`. Both provider catalogs move fast, so if either
   starts returning 404s, that model has likely been retired; check the
   provider's current model list and update `backend/.env`.
-- Not yet done: an actual deploy to Render/Vercel/Supabase, and the real
-  20-pair threshold calibration described in `DESIGN.md` (Phase 9). Both
-  need accounts and real-world data this environment doesn't have.
+- Scoring has been checked against three real resumes across a dozen
+  role targets (Phase 10). That is what moved the partial threshold to 0.62
+  and anchored the credit curve; it is still a small set, and the 20-pair
+  calibration in `DESIGN.md` remains open.
+- Not yet done: an actual deploy to Render/Vercel/Supabase.
 
 ## Running it locally
 
@@ -176,11 +198,16 @@ cost of the instance never really sleeping.
 
 - **No refresh tokens, password reset, or email verification.** Sessions
   last 24 hours; expiry just logs you out. See ARCHITECTURE.md for why.
-- **Scoring thresholds are starting values**, not calibrated against real
-  resume/JD pairs yet (`DESIGN.md`'s Phase 9 task). A literal mention of a
-  skill in the resume is always treated as covered regardless of threshold,
-  which fixes the obvious case; everything in between is a reasonable guess
-  until real data says otherwise.
+- **Scoring is keyword coverage, honestly labelled.** A skill counts as
+  covered when the resume names it (or a listed alias) or the embedding
+  similarity clears 0.75. Short names against long resume chunks rarely
+  clear that bar on similarity alone, so in practice the score is close to
+  "share of the profile's skills your resume names". A strong candidate
+  usually lands between 50% and 80%. Thresholds were adjusted on three real
+  resumes; a wider calibration set is still open.
+- **Curated role profiles are a starting set.** 36 roles, drafted by the
+  LLM once and reviewed by hand. Expect a few false positives from ordinary
+  words as real resumes come through, and fix them in the JSON, not in code.
 - **Rate limiting is in-process**, correct for a single Render instance,
   wrong the moment a second worker exists (see `app/core/limiter.py`).
 - **No job scraping, multi-resume comparison, or resume rewriting.** Out of

@@ -19,3 +19,21 @@ curl -X POST localhost:8000/api/interview/ \
   -F "resume=@Sample/your_resume.pdf" \
   -F "job_description=<Sample/jd.txt"
 ```
+
+Rank the same resume against every curated role profile (no LLM, no report):
+
+```bash
+curl -X POST localhost:8000/api/interview/careers \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "resume=@Sample/your_resume.pdf"
+```
+
+Or type a target instead of a posting; a role the app knows scores against
+its curated profile, so the number matches the career-fit panel:
+
+```bash
+curl -X POST localhost:8000/api/interview/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "resume=@Sample/your_resume.pdf" \
+  -F "job_description=I want to be an AI Engineer."
+```
