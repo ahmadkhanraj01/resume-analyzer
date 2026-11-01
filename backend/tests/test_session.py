@@ -38,3 +38,33 @@ def test_missing_columns_are_added_to_existing_sqlite_table():
     with engine.connect() as conn:
         row = conn.execute(text("SELECT scored_against, role_title FROM reports")).one()
     assert row == ("job_description", None)
+
+
+def test_added_json_columns_backfill_old_rows_with_an_empty_list():
+    # An unquoted DEFAULT [] is an empty identifier to SQLite, which stored ''
+    # in old rows and broke the history list with a JSON decode error.
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "CREATE TABLE reports (id VARCHAR PRIMARY KEY, user_id VARCHAR NOT NULL, "
+                "title VARCHAR NOT NULL, job_description VARCHAR NOT NULL, "
+                "self_description VARCHAR NOT NULL, resume_text VARCHAR NOT NULL, "
+                "match_score INTEGER NOT NULL, skill_gaps JSON, technical_qs JSON, "
+                "behavioral_qs JSON, preparation_plan JSON, created_at DATETIME NOT NULL)"
+            )
+        )
+        conn.execute(
+            text(
+                "INSERT INTO reports VALUES ('r1','u1','t','jd','', 'resume', 50, "
+                "'[]','[]','[]','[]','2026-01-01 00:00:00')"
+            )
+        )
+
+    sync_sqlite_schema(engine)
+
+    with engine.connect() as conn:
+        row = conn.execute(text("SELECT resume_keywords, resume_rewrites FROM reports")).one()
+    assert row == ("[]", "[]")

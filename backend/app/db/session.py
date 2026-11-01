@@ -26,6 +26,14 @@ def get_db() -> Generator[Session, None, None]:
         yield session
 
 
+def _sql_literal(value) -> str:
+    if isinstance(value, str):
+        return "'" + value.replace("'", "''") + "'"
+    if hasattr(value, "text"):  # text("...") server defaults are raw SQL
+        return value.text
+    return str(value)
+
+
 def sync_sqlite_schema(engine) -> None:
     """Dev-only stand-in for migrations on SQLite. create_all makes missing
     tables but never touches an existing one, so a dev.db created before a
@@ -41,10 +49,11 @@ def sync_sqlite_schema(engine) -> None:
                     continue
                 ddl = f"ALTER TABLE {table.name} ADD COLUMN {column.name} "
                 ddl += column.type.compile(dialect=engine.dialect)
+                # String defaults must be SQL-quoted: a bare DEFAULT [] is an
+                # empty identifier to SQLite and backfills old rows with ''.
                 if column.server_default is not None:
-                    ddl += f" DEFAULT {column.server_default.arg}"
+                    ddl += f" DEFAULT {_sql_literal(column.server_default.arg)}"
                 elif column.default is not None and column.default.is_scalar:
-                    value = column.default.arg
-                    ddl += f" DEFAULT {value!r}" if isinstance(value, str) else f" DEFAULT {value}"
+                    ddl += f" DEFAULT {_sql_literal(column.default.arg)}"
                 conn.execute(text(ddl))
                 logger.info("sqlite dev schema: added %s.%s", table.name, column.name)
