@@ -34,7 +34,6 @@ export default function Register() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <p className="auth-card__eyebrow">Get started</p>
         <h1>Create an account</h1>
         <p className="auth-card__lead">Free, and your reports stay private to you.</p>
         <ErrorBanner message={error} />

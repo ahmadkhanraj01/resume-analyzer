@@ -30,7 +30,6 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <p className="auth-card__eyebrow">Welcome back</p>
         <h1>Log in</h1>
         <p className="auth-card__lead">Pick up where you left off with your reports.</p>
         <ErrorBanner message={error} />

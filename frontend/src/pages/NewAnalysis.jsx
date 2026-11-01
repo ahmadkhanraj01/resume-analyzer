@@ -63,10 +63,10 @@ export default function NewAnalysis() {
 
   return (
     <div className="new-analysis-page">
-      <h1>New analysis</h1>
+      <h1>Measure your resume against a job</h1>
       <p className="page-lead">
-        Upload your resume and paste the job description. You get a match score, the skills to
-        close, likely interview questions, and a day-by-day plan.
+        You get a match score, the skills to close, edits for your resume, likely interview
+        questions, and a day-by-day plan.
       </p>
       <ErrorBanner message={error}>
         {failed && canSubmit && (
@@ -76,7 +76,9 @@ export default function NewAnalysis() {
         )}
       </ErrorBanner>
       <form onSubmit={handleSubmit} className="new-analysis-form card">
-        <label>Resume</label>
+        <p className="step-label">
+          <span className="step-label__num">1</span> Your resume
+        </p>
         <FileDrop file={file} onChange={setFile} onError={setError} />
 
         <CareerFit
@@ -88,7 +90,9 @@ export default function NewAnalysis() {
         />
 
         <label htmlFor="jd">
-          Job description or target role
+          <span className="step-label">
+            <span className="step-label__num">2</span> The job you want
+          </span>
           <textarea
             id="jd"
             required
@@ -105,7 +109,10 @@ export default function NewAnalysis() {
         </label>
 
         <label htmlFor="self">
-          About you <span className="field-hint">(optional)</span>
+          <span className="step-label">
+            <span className="step-label__num">3</span> About you{" "}
+            <span className="field-hint">optional</span>
+          </span>
           <textarea
             id="self"
             rows={4}
@@ -117,7 +124,7 @@ export default function NewAnalysis() {
         </label>
 
         <button type="submit" disabled={!canSubmit}>
-          Analyze
+          Analyze my resume
         </button>
       </form>
     </div>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getReport, deleteReport, downloadReportPdf } from "../api/interview";
 import { messageForError } from "../lib/errorMessages";
-import ScoreRing from "../components/ScoreRing";
+import ScoreTape from "../components/ScoreTape";
 import SkillGapList from "../components/SkillGapList";
 import QuestionCard from "../components/QuestionCard";
 import PrepPlan from "../components/PrepPlan";
@@ -62,9 +62,21 @@ export default function ReportDetail() {
   if (loadError) return <ErrorBanner message={loadError} />;
   if (!report) return <Spinner />;
 
+  const keywords = report.resume_keywords ?? [];
+  const rewrites = report.resume_rewrites ?? [];
+  // Only sections with content get a rail link, so the rail never points
+  // at something that is not on the page.
+  const sections = [
+    { id: "gaps", label: "Skill gaps", count: report.skill_gaps.length },
+    { id: "resume", label: "Resume edits", count: keywords.length + rewrites.length },
+    { id: "technical", label: "Technical questions", count: report.technical_qs.length },
+    { id: "behavioral", label: "Behavioral questions", count: report.behavioral_qs.length },
+    { id: "plan", label: "Preparation plan", count: report.preparation_plan.length },
+  ].filter((s) => s.count > 0);
+
   return (
     <div className="report-detail">
-      <div className="report-detail__header">
+      <header className="report-detail__header">
         <h1>{report.title}</h1>
         <div className="report-detail__actions">
           <button type="button" onClick={handleDownload} disabled={downloading}>
@@ -91,13 +103,13 @@ export default function ReportDetail() {
             </button>
           )}
         </div>
-      </div>
+      </header>
 
       <ErrorBanner message={actionError} />
 
       {/* Score first, then gaps and resume fixes, then questions, then the
           plan: users want the verdict before the detail. */}
-      <ScoreRing score={report.match_score} />
+      <ScoreTape score={report.match_score} />
 
       {report.scored_against === "role_profile" && (
         <div className="notice" role="note">
@@ -107,38 +119,54 @@ export default function ReportDetail() {
         </div>
       )}
 
-      <section>
-        <h2>Skill gaps</h2>
-        <p className="section-lead">
-          Skills the job description asks for that your resume does not clearly show, worst first.
-        </p>
-        <SkillGapList gaps={report.skill_gaps} />
-      </section>
+      <div className="report-detail__layout">
+        <nav className="report-rail" aria-label="Report sections">
+          <ol>
+            {sections.map((s) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`}>
+                  <span>{s.label}</span>
+                  <span className="report-rail__count">{s.count}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-      <ResumeSuggestions
-        keywords={report.resume_keywords ?? []}
-        rewrites={report.resume_rewrites ?? []}
-      />
+        <div className="report-detail__body">
+          {report.skill_gaps.length > 0 && (
+            <section id="gaps">
+              <h2>Skill gaps</h2>
+              <p className="section-lead">
+                Skills the job asks for that your resume does not clearly show, worst first.
+              </p>
+              <SkillGapList gaps={report.skill_gaps} />
+            </section>
+          )}
 
-      <section>
-        <h2>Technical questions</h2>
-        <p className="section-lead">Answers are hidden so you can try each one first.</p>
-        {report.technical_qs.map((q, i) => (
-          <QuestionCard key={i} index={i} {...q} />
-        ))}
-      </section>
+          <ResumeSuggestions id="resume" keywords={keywords} rewrites={rewrites} />
 
-      <section>
-        <h2>Behavioral questions</h2>
-        {report.behavioral_qs.map((q, i) => (
-          <QuestionCard key={i} index={i} {...q} />
-        ))}
-      </section>
+          <section id="technical">
+            <h2>Technical questions</h2>
+            <p className="section-lead">Answers are hidden so you can try each one first.</p>
+            {report.technical_qs.map((q, i) => (
+              <QuestionCard key={i} index={i} {...q} />
+            ))}
+          </section>
 
-      <section>
-        <h2>Preparation plan</h2>
-        <PrepPlan days={report.preparation_plan} />
-      </section>
+          <section id="behavioral">
+            <h2>Behavioral questions</h2>
+            {report.behavioral_qs.map((q, i) => (
+              <QuestionCard key={i} index={i} {...q} />
+            ))}
+          </section>
+
+          <section id="plan">
+            <h2>Preparation plan</h2>
+            <PrepPlan days={report.preparation_plan} />
+          </section>
+        </div>
+      </div>
     </div>
   );
 }

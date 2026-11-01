@@ -4,10 +4,6 @@ import { messageForError } from "../lib/errorMessages";
 
 const TOP_N = 5;
 
-function tone(score) {
-  return score >= 65 ? "good" : score >= 40 ? "partial" : "weak";
-}
-
 // Ranks the uploaded resume against the curated role profiles as soon as a
 // file is chosen. Never calls the LLM, so it is a few seconds at most; a
 // plain busy state is enough here, unlike the full analysis.
@@ -80,7 +76,8 @@ export default function CareerFit({ file, onPick }) {
           {result.fits.slice(0, TOP_N).map((fit) => (
             <li key={fit.role} className="career-fit__item">
               <div className="career-fit__row">
-                <span className={`score-pill score-pill--${tone(fit.match_score)}`}>
+                <span className="score-pill">
+                  <span className="mini-tape" style={{ "--score": fit.match_score }} />
                   {fit.match_score}%
                 </span>
                 <span className="career-fit__role">{fit.role}</span>

@@ -13,9 +13,7 @@ function NavBar() {
   return (
     <nav className="nav-bar">
       <Link to="/new" className="nav-bar__brand">
-        <span className="nav-bar__logo" aria-hidden="true">
-          RA
-        </span>
+        <span className="nav-bar__logo" aria-hidden="true" />
         <span className="nav-bar__brand-text">Resume Analyzer</span>
       </Link>
       <div className="nav-bar__links">

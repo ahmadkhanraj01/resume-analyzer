@@ -22,12 +22,12 @@ function CopyButton({ text, label = "Copy" }) {
   );
 }
 
-export default function ResumeSuggestions({ keywords, rewrites }) {
+export default function ResumeSuggestions({ id, keywords, rewrites }) {
   if (!keywords.length && !rewrites.length) return null;
 
   return (
-    <section className="resume-tips">
-      <h2>Optimize your resume</h2>
+    <section id={id} className="resume-tips">
+      <h2>Resume edits</h2>
       <p className="section-lead">
         Changes that make this resume read closer to the job description. Only add what you can
         back up in an interview, and fill in any [placeholders] with real numbers.
@@ -53,13 +53,15 @@ export default function ResumeSuggestions({ keywords, rewrites }) {
           <ul className="resume-tips__rewrites">
             {rewrites.map((r, i) => (
               <li key={i} className="resume-tips__rewrite">
-                <div className="resume-tips__before">
-                  <span className="resume-tips__tag">Before</span> {r.original}
-                </div>
-                <div className="resume-tips__after">
-                  <span className="resume-tips__tag">After</span> {r.improved}
+                <p className="resume-tips__before">
+                  <span className="resume-tips__tag">Now</span>
+                  <span>{r.original}</span>
+                </p>
+                <p className="resume-tips__after">
+                  <span className="resume-tips__tag">Try</span>
+                  <span>{r.improved}</span>
                   <CopyButton text={r.improved} />
-                </div>
+                </p>
                 <p className="resume-tips__reason">{r.reason}</p>
               </li>
             ))}

@@ -1,35 +1,43 @@
-// Palette. Deep green primary on a warm off-white, with a slightly cooler
-// surface so cards lift off the page without heavy shadows.
-$color-bg: #f4f6f3;
-$color-bg-accent: #e6efe8;
+// Palette: a tailor's cutting table. Cool pattern paper, ink-navy drafting,
+// chalk yellow for the measuring tape and highlights, pin red for what is
+// missing. Yellow is a fill color only; it never carries text on its own.
+$color-bg: #f2f4f7;
+$color-grid: rgba(27, 36, 64, 0.045);
 $color-surface: #ffffff;
-$color-surface-2: #f8faf8;
-$color-text: #16201a;
-$color-muted: #5f6b64;
-$color-border: #dfe5e0;
-$color-border-strong: #c9d2cb;
+$color-surface-2: #f7f8fa;
+$color-text: #1b2440;
+$color-muted: #5b6478;
+$color-border: #dde1e8;
+$color-border-strong: #c3c9d4;
 
-$color-primary: #1f7a45;
-$color-primary-dark: #165c34;
-$color-primary-soft: #e3f2e8;
-$color-primary-ring: rgba(31, 122, 69, 0.25);
+$color-primary: #1b2440;
+$color-primary-dark: #0f1630;
+$color-primary-soft: #e6e9f1;
+$color-primary-ring: rgba(27, 36, 64, 0.22);
 
-$color-critical: #b3261e;
-$color-critical-soft: #fbe9e7;
-$color-moderate: #a35e00;
-$color-moderate-soft: #fff1dc;
-$color-minor: #1f7a45;
-$color-minor-soft: #e3f2e8;
+$color-chalk: #f3c843;
+$color-chalk-soft: #fbedb8;
+$color-chalk-deep: #d9a91a;
+// Chalk for text: the fill shades fail contrast on white.
+$color-chalk-ink: #7d5a00;
 
-$color-danger: #b3261e;
+$color-critical: #c23a2b;
+$color-critical-soft: #fbe8e5;
+$color-moderate: #946200;
+$color-moderate-soft: #fbf0d6;
+$color-minor: #2d6a5f;
+$color-minor-soft: #e2f0ec;
 
-$radius: 10px;
-$radius-lg: 16px;
-$max-width: 800px;
+$color-danger: #c23a2b;
 
-$shadow-sm: 0 1px 2px rgba(22, 32, 26, 0.05), 0 1px 3px rgba(22, 32, 26, 0.06);
-$shadow-md: 0 4px 14px rgba(22, 32, 26, 0.08), 0 1px 3px rgba(22, 32, 26, 0.05);
-$shadow-lg: 0 16px 40px rgba(22, 32, 26, 0.12);
+$radius: 6px;
+$radius-lg: 10px;
+$max-width: 760px;
+$max-width-wide: 1080px;
 
-$font-sans:
-  "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+$shadow-sm: 0 1px 2px rgba(27, 36, 64, 0.06);
+$shadow-md: 0 6px 18px rgba(27, 36, 64, 0.08);
+$shadow-lg: 0 18px 44px rgba(27, 36, 64, 0.12);
+
+$font-sans: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-display: "Bricolage Grotesque", $font-sans;

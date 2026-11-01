@@ -65,12 +65,9 @@ export default function History() {
                       </span>
                     )}
                   </span>
-                  <span
-                    className={`score-pill score-pill--${
-                      r.match_score >= 65 ? "good" : r.match_score >= 40 ? "partial" : "weak"
-                    }`}
-                  >
-                    {r.match_score}% &middot; {scoreLabel(r.match_score)}
+                  <span className="history-list__score" title={scoreLabel(r.match_score)}>
+                    <span className="mini-tape" style={{ "--score": r.match_score }} />
+                    <span className="history-list__pct">{r.match_score}%</span>
                   </span>
                   <span className="history-list__date">{formatDate(r.created_at)}</span>
                 </Link>
