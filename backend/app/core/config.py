@@ -15,6 +15,10 @@ class Settings(BaseSettings):
 
     # Database
     database_url: str = "sqlite:///./dev.db"
+    # Direct (non-pooled) connection for Alembic. Neon's pooled endpoint is
+    # PgBouncer in transaction mode, which migrations should not go through.
+    # Empty means migrations use database_url.
+    database_url_unpooled: str = ""
 
     # Auth. No fallback default: a real secret must come from the environment.
     jwt_secret: str

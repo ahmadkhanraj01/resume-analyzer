@@ -21,7 +21,13 @@ if config.config_file_name is not None:
 
 # The real connection string comes from app.core.config (env), never from a
 # value checked into alembic.ini.
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+_settings = get_settings()
+# "%" is escaped because the ini parser treats it as interpolation, and
+# Neon passwords or URL-encoded query values can contain it.
+config.set_main_option(
+    "sqlalchemy.url",
+    (_settings.database_url_unpooled or _settings.database_url).replace("%", "%%"),
+)
 
 target_metadata = SQLModel.metadata
 

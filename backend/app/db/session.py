@@ -12,10 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 def make_engine(settings: Settings):
-    connect_args = {}
     if settings.database_url.startswith("sqlite"):
-        connect_args = {"check_same_thread": False}
-    return create_engine(settings.database_url, echo=False, connect_args=connect_args)
+        return create_engine(
+            settings.database_url, echo=False, connect_args={"check_same_thread": False}
+        )
+    # Neon suspends an idle compute after 5 minutes and Render sleeps the API
+    # after 15, so a pooled connection may be dead when it is next used:
+    # pre_ping replaces it instead of failing the request.
+    return create_engine(settings.database_url, echo=False, pool_pre_ping=True)
 
 
 engine = make_engine(get_settings())
