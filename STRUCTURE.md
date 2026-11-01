@@ -179,9 +179,10 @@ frontend/
     ├── components/
     │   ├── FileDrop.jsx          [7] drag-drop, client-side size/type check
     │   ├── StagedProgress.jsx    [7] timed messages during analysis
-    │   ├── ScoreRing.jsx         [7]
+    │   ├── ScoreTape.jsx         [7] score drawn as a tape measure
     │   ├── SkillGapList.jsx      [7] sorted by severity
-    │   ├── CareerFit.jsx         [10] top roles for the uploaded resume
+    │   ├── CareerFit.jsx         [10] top roles, scored on upload
+    │   ├── ResumeSuggestions.jsx [11] keywords to add, line rewrites
     │   ├── QuestionCard.jsx      [7] collapsed answer by default
     │   ├── PrepPlan.jsx          [7]
     │   ├── ErrorBanner.jsx       [7] maps error codes to messages

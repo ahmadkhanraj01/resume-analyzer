@@ -2,28 +2,36 @@
 
 Upload a resume, paste a job description or just name the role you want,
 and get back a structured report: a deterministic match score, a per-skill
-gap analysis, technical and behavioral interview questions, and a day-by-day
-preparation plan. Export any report as a PDF. Not sure what to target? The
-career-fit panel ranks the resume against 36 curated role profiles before
-you run anything.
+gap analysis, edits for the resume itself, technical and behavioral
+interview questions, and a day-by-day preparation plan. Export any report as
+a PDF. Not sure what to target? As soon as a resume is uploaded, the app
+ranks it against 36 curated role profiles and offers the best fits as
+one-click targets.
 
 **Live app:** not deployed yet. See [Deployment](#deployment) below; the
 project is built and tested locally, ready to push to Render, Vercel, and a
 managed Postgres instance.
 
-![Career fit panel ranking a resume against curated role profiles](docs/career-fit.png)
+![New-analysis page with suggested roles ranked for the uploaded resume](docs/career-fit.png)
 
-*The career-fit panel on the new-analysis page: the uploaded resume scored
-against 36 curated role profiles, with the skills it already names for each.
-Picking a role fills the target box and runs the full report against the
-same profile.*
+*The new-analysis page right after a resume is uploaded: it is scored
+against 36 curated role profiles with no button press, and each suggested
+role shows the skills the resume already names. "Use this role" fills the
+target box, and the report scores against that same profile.*
 
-![Report view with the deterministic match score, skill gaps, and generated interview questions](docs/report-view.png)
+![Report view with the match score drawn as a tape measure and the skill gaps behind it](docs/report-view.png)
 
-*The report for the same resume against the AI Engineer profile: the same
-71% the panel showed, the gaps that drive it, and the start of the
-generated questions. The full page continues with behavioral questions and
-a 14-day preparation plan.*
+*The report for the same resume against the Backend Developer profile: the
+same 63% the panel showed, drawn as a tape measure, and the gaps that drive
+it. The side rail jumps to each section.*
+
+![Resume edits: keywords to add and before/after rewrites of resume lines](docs/resume-edits.png)
+
+*Resume edits from the same report: job-description keywords the resume is
+missing, and rewrites of its weakest lines. Every "Now" line is checked
+against the resume text, so the model cannot rewrite a line that is not
+there. The full page continues with interview questions and a 14-day
+preparation plan.*
 
 ## Why this exists
 
@@ -37,8 +45,10 @@ differently on every run. This one splits the work on purpose:
   aggregate. No network call, no temperature, no drift: the same resume and
   job description always produce the same score.
 - **The LLM only generates text that needs generating.** Interview
-  questions, the reasoning behind them, and the prep plan. It never grades
-  anything, and if it tries to return a score, that value is discarded.
+  questions, the reasoning behind them, the prep plan, and resume edits. It
+  never grades anything, and if it tries to return a score, that value is
+  discarded. Its resume edits are filtered too: keywords the resume already
+  has and rewrites of lines that are not on the resume are dropped.
 - **A score of 20% displays as 20%.** Credit for a skill starts at zero
   below the partial threshold, so a resume with none of the skills scores
   near zero rather than the 65 point floor an unanchored cosine similarity
@@ -89,7 +99,7 @@ each choice is [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 
-- Backend: 104 tests passing. PDF rendering tests skip themselves on a
+- Backend: 107 tests passing. PDF rendering tests skip themselves on a
   machine without WeasyPrint's native libraries; see
   [Running tests](#running-tests).
 - Frontend: builds cleanly, lints cleanly.
@@ -208,7 +218,7 @@ Not deployed yet. Once you have accounts:
 2. **Backend:** point a Render Docker service at `backend/Dockerfile`. Set
    every key from `backend/.env.example` in Render's dashboard. Run
    `alembic upgrade head` against the production database before the first
-   deploy.
+   deploy, and again before any deploy that adds a migration.
 3. **Frontend:** point a Vercel project at `frontend/`, with `VITE_API_URL`
    set to the Render backend's URL plus `/api`.
 
@@ -234,8 +244,11 @@ cost of the instance never really sleeping.
   words as real resumes come through, and fix them in the JSON, not in code.
 - **Rate limiting is in-process**, correct for a single Render instance,
   wrong the moment a second worker exists (see `app/core/limiter.py`).
-- **No job scraping, multi-resume comparison, or resume rewriting.** Out of
-  scope for v1; see `DESIGN.md`.
+- **Resume edits are suggestions, not a new file.** The app tells you which
+  keywords to add and how to reword lines; you copy them into your own
+  resume. It does not generate or edit the document.
+- **No job scraping or multi-resume comparison.** Out of scope for v1; see
+  `DESIGN.md`.
 
 ## Repository layout
 

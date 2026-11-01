@@ -1,6 +1,6 @@
 # Build phases
 
-Ten phases, 0 through 9. Each ends with something you can run and verify. Do
+Twelve phases, 0 through 11. Each ends with something you can run and verify. Do
 not start a phase before its checkpoint above it passes.
 
 Status: `[ ]` not started, `[~]` in progress, `[x]` done.
@@ -287,13 +287,30 @@ profiles fix the drift and make ranking cheap enough to run on upload.
 
 ---
 
+## Phase 11: resume edits and UI refresh [x]
+
+- `resume_keywords` and `resume_rewrites` on the report contract, the
+  prompt, the DB, the PDF, and a migration
+- `analysis.py` drops keywords already on the resume and rewrites of lines
+  that are not on it
+- Career fit runs on upload instead of on a button press
+- Frontend redesign: score as a measuring tape, section rail on the report,
+  numbered steps on the new-analysis form
+
+**Checkpoint:** a live analysis of the fixture resume returns keywords the
+resume lacks and rewrites whose "before" line is copied from the resume.
+
+**Status:** done. Verified with a live Groq run, not only mocked tests.
+
+---
+
 ## Deferred
 
 Not in this build. Listed so they stay out of scope rather than creeping in.
 
 - TypeScript across the frontend
 - Refresh tokens, password reset, email verification
-- Resume rewriting and generation
+- Generating or editing the resume file itself
 - Comparing one resume against several JDs
 - pgvector and a stored job posting corpus
 - Background job queue

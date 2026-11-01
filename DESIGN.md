@@ -11,13 +11,14 @@ system is put together; this says what it actually does.
 
 - Register, log in, log out
 - Upload a resume (PDF or DOCX), paste a job description and self description
-- Receive a report: match score, skill gaps, technical questions, behavioral
-  questions, day-by-day preparation plan
+- Receive a report: match score, skill gaps, resume edits (keywords to add
+  and rewrites of weak lines), technical questions, behavioral questions,
+  day-by-day preparation plan
 - List past reports, open one, export it as PDF
 
 **Explicitly out of scope for v1**
 
-- Resume rewriting or generation
+- Generating or editing the resume file itself (edits are suggestions to copy)
 - Multi-resume comparison
 - Job scraping from a URL
 - Team or recruiter accounts

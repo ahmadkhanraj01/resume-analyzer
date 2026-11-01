@@ -68,6 +68,11 @@ Thin client. Holds no business logic beyond form validation and rendering.
   Routes render a loading state until that resolves, otherwise protected routes
   flash the login page on every refresh.
 - Pages: Register, Login, New Analysis, Report Detail, History.
+- New Analysis scores the resume against the curated role profiles as soon
+  as it is uploaded and offers each suggested role as a button that fills the
+  target box.
+- Report Detail shows the score as a measuring tape, then skill gaps, resume
+  edits, questions, and the plan, with a sticky section rail on desktop.
 
 ### Backend (FastAPI)
 
@@ -119,10 +124,14 @@ reports
   self_description  text
   resume_text       text        -- extracted, stored for regeneration
   match_score       int         -- 0..100, from scoring.py
+  scored_against    text        -- job_description or role_profile
+  role_title        text null   -- set when scored against a role profile
   skill_gaps        jsonb
   technical_qs      jsonb
   behavioral_qs     jsonb
   preparation_plan  jsonb
+  resume_keywords   jsonb       -- JD terms missing from the resume
+  resume_rewrites   jsonb       -- {original, improved, reason} per weak line
   created_at        timestamptz
 ```
 
@@ -169,6 +178,10 @@ and prep plan target the actual gaps.
 - Markdown fences are stripped defensively before parsing regardless of what the
   prompt asked for.
 - The LLM never produces the match score. If it returns one, it is discarded.
+- The same call suggests resume edits: keywords from the job description and
+  rewrites of weak resume lines. `analysis.py` drops any keyword the resume
+  already contains and any rewrite whose original line is not actually on the
+  resume, so the model cannot ask the user to change text they never wrote.
 
 ### PDF service
 
