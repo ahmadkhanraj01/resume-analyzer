@@ -1,3 +1,5 @@
+import re
+
 from fastapi import APIRouter, Form, Query, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
@@ -21,6 +23,14 @@ router = APIRouter(prefix="/interview", tags=["interview"])
 JD_MIN_LENGTH = 10
 JD_MAX_LENGTH = 20_000
 SELF_MAX_LENGTH = 2_000
+
+
+def _display_filename(name: str | None) -> str | None:
+    """Base name only, capped. Browsers send just the name, but some old
+    clients send a full Windows path, which would leak a local directory."""
+    if not name:
+        return None
+    return re.split(r"[\\/]", name)[-1][:120] or None
 
 
 def _get_owned_report(db, report_id: str, user_id: str) -> Report:
@@ -80,6 +90,7 @@ async def create_report(
         match_score=result.report.match_score,
         scored_against=result.scored_against.value,
         role_title=result.role_title,
+        resume_filename=_display_filename(resume.filename),
         skill_gaps=[g.model_dump(mode="json") for g in result.report.skill_gaps],
         technical_qs=[q.model_dump(mode="json") for q in result.report.technical_qs],
         behavioral_qs=[q.model_dump(mode="json") for q in result.report.behavioral_qs],
@@ -141,7 +152,9 @@ def list_reports(
     rows = db.exec(
         select(Report)
         .where(Report.user_id == user.id)
-        .order_by(Report.created_at.desc())
+        # id breaks ties so two reports with the same timestamp cannot swap
+        # places between pages and show up twice or not at all.
+        .order_by(Report.created_at.desc(), Report.id.desc())
         .limit(limit)
         .offset(offset)
     ).all()

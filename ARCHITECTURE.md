@@ -126,6 +126,7 @@ reports
   match_score       int         -- 0..100, from scoring.py
   scored_against    text        -- job_description or role_profile
   role_title        text null   -- set when scored against a role profile
+  resume_filename   text null   -- uploaded file's base name, display only
   skill_gaps        jsonb
   technical_qs      jsonb
   behavioral_qs     jsonb

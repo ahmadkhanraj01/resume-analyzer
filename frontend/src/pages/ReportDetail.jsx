@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getReport, deleteReport, downloadReportPdf } from "../api/interview";
 import { messageForError } from "../lib/errorMessages";
+import { formatDateTime } from "../lib/format";
 import ScoreTape from "../components/ScoreTape";
 import SkillGapList from "../components/SkillGapList";
 import QuestionCard from "../components/QuestionCard";
@@ -77,7 +78,13 @@ export default function ReportDetail() {
   return (
     <div className="report-detail">
       <header className="report-detail__header">
-        <h1>{report.title}</h1>
+        <div className="report-detail__heading">
+          <h1>{report.title}</h1>
+          <p className="report-detail__meta">
+            {report.resume_filename && <>{report.resume_filename}, </>}
+            {formatDateTime(report.created_at)}
+          </p>
+        </div>
         <div className="report-detail__actions">
           <button type="button" onClick={handleDownload} disabled={downloading}>
             {downloading ? "Preparing PDF…" : "Download PDF"}

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { listReports } from "../api/interview";
 import { messageForError } from "../lib/errorMessages";
-import { formatDate, scoreLabel } from "../lib/format";
+import { formatDateTime, scoreLabel } from "../lib/format";
 import Spinner from "../components/Spinner";
 import ErrorBanner from "../components/ErrorBanner";
 
@@ -57,19 +57,24 @@ export default function History() {
             {items.map((r) => (
               <li key={r.id} className="history-list__item">
                 <Link to={`/reports/${r.id}`}>
-                  <span className="history-list__title">
-                    {r.title}
-                    {r.scored_against === "role_profile" && (
-                      <span className="tag" title="Scored against a typical role profile">
-                        Role profile
-                      </span>
-                    )}
+                  <span className="history-list__main">
+                    <span className="history-list__title">{r.title}</span>
+                    <span className="history-list__meta">
+                      {r.resume_filename && (
+                        <span className="history-list__file">{r.resume_filename}</span>
+                      )}
+                      {r.scored_against === "role_profile" && (
+                        <span className="tag" title="Scored against a typical role profile">
+                          Role profile
+                        </span>
+                      )}
+                      <time dateTime={r.created_at}>{formatDateTime(r.created_at)}</time>
+                    </span>
                   </span>
                   <span className="history-list__score" title={scoreLabel(r.match_score)}>
                     <span className="mini-tape" style={{ "--score": r.match_score }} />
                     <span className="history-list__pct">{r.match_score}%</span>
                   </span>
-                  <span className="history-list__date">{formatDate(r.created_at)}</span>
                 </Link>
               </li>
             ))}

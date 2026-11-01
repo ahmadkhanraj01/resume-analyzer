@@ -150,6 +150,7 @@ def run_analysis(
     # holds even if that wrapper is bypassed or replaced.
     report = report.model_copy(
         update={
+            "title": _report_title(report.title, role_title),
             "skill_gaps": gaps,
             "match_score": scoring_result.match_score,
             "resume_keywords": _new_keywords(report.resume_keywords, resume_text),
@@ -196,6 +197,15 @@ def _advice_lookup(
         if skill is not None and skill not in advice:
             advice[skill] = gap.advice
     return advice
+
+
+def _report_title(model_title: str, role_title: str | None) -> str:
+    """The model's title, unless the report is scored against a role it
+    does not name. Models sometimes return a bare "Interview Preparation
+    Report", which leaves nothing to tell reports apart in History."""
+    if role_title and role_title.lower() not in model_title.lower():
+        return f"{role_title} Interview Preparation"
+    return model_title
 
 
 def _squash(text: str) -> str:

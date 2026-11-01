@@ -56,6 +56,8 @@ class Report(SQLModel, table=True):
     # Postgres type change.
     scored_against: str = Field(default="job_description", nullable=False)
     role_title: str | None = Field(default=None, nullable=True)
+    # Display only, so History can tell reports for different resumes apart.
+    resume_filename: str | None = Field(default=None, nullable=True)
     skill_gaps: list = Field(default_factory=list, sa_column=_json_column())
     technical_qs: list = Field(default_factory=list, sa_column=_json_column())
     behavioral_qs: list = Field(default_factory=list, sa_column=_json_column())

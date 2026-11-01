@@ -907,11 +907,20 @@ label {
     flex-wrap: wrap;
 
     h1 {
-      flex: 1;
-      min-width: 260px;
       max-width: 24ch;
       margin: 0;
     }
+  }
+
+  &__heading {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  &__meta {
+    margin: 0.5rem 0 0;
+    color: $color-muted;
+    font-size: 0.9rem;
   }
 
   &__actions {
@@ -1293,15 +1302,43 @@ label {
     border-radius: 0 0 $radius-lg $radius-lg;
   }
 
-  &__title {
+  &__main {
     flex: 1;
-    font-weight: 700;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__title {
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    color: $color-muted;
+    font-size: 0.85rem;
+
+    .tag {
+      margin-left: 0;
+    }
+  }
+
+  &__file {
+    max-width: 32ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__score {
+    flex: none;
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
@@ -1313,25 +1350,16 @@ label {
     font-family: $font-display;
     font-weight: 800;
   }
-
-  &__date {
-    color: $color-muted;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    width: 6.5rem;
-    text-align: right;
-  }
 }
 
 @media (max-width: 560px) {
   .history-list__item a {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
   }
   .history-list__title {
-    flex-basis: 100%;
-  }
-  .history-list__date {
-    width: auto;
+    white-space: normal;
   }
 }
 

@@ -102,7 +102,15 @@ def test_list_reports_returns_trimmed_shape(client, auth_headers):
     body = resp.json()
     assert body["total"] == 1
     item = body["items"][0]
-    assert set(item.keys()) == {"id", "title", "match_score", "created_at", "scored_against"}
+    assert set(item.keys()) == {
+        "id",
+        "title",
+        "match_score",
+        "created_at",
+        "scored_against",
+        "role_title",
+        "resume_filename",
+    }
 
 
 def test_get_report_by_id(client, auth_headers):
@@ -331,3 +339,19 @@ def test_resume_suggestions_are_stored_and_returned(client, auth_headers):
     body = client.get(f"/api/interview/{created.json()['id']}", headers=headers).json()
     assert body["resume_keywords"] == ["Kafka"]
     assert body["resume_rewrites"][0]["improved"].startswith("Raised payments module")
+
+
+def test_history_shows_resume_filename_without_client_path(client, auth_headers):
+    headers = auth_headers()
+    jd = (FIXTURES / "jd_sample.txt").read_text(encoding="utf-8")
+    with _mock_llm(), open(FIXTURES / "resume_sample.pdf", "rb") as f:
+        created = client.post(
+            "/api/interview/",
+            headers=headers,
+            files={"resume": ("C:\\Users\\someone\\cv_final.pdf", f, "application/pdf")},
+            data={"job_description": jd},
+        )
+    assert created.status_code == 201, created.text
+    assert created.json()["resume_filename"] == "cv_final.pdf"
+    item = client.get("/api/interview/", headers=headers).json()["items"][0]
+    assert item["resume_filename"] == "cv_final.pdf"

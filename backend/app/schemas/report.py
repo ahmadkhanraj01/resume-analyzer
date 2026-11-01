@@ -80,6 +80,7 @@ class ReportOut(InterviewReport):
     created_at: datetime
     scored_against: ScoredAgainst = ScoredAgainst.job_description
     role_title: str | None = None
+    resume_filename: str | None = None
 
 
 class ReportSummaryOut(BaseModel):
@@ -91,3 +92,5 @@ class ReportSummaryOut(BaseModel):
     match_score: int
     created_at: datetime
     scored_against: ScoredAgainst = ScoredAgainst.job_description
+    role_title: str | None = None
+    resume_filename: str | None = None

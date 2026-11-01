@@ -200,3 +200,15 @@ def test_resume_rewrites_keep_only_lines_actually_on_the_resume():
     assert [r.improved for r in result.resume_rewrites] == [
         "Scaled a Python/FastAPI service to 2M requests per day."
     ]
+
+
+def test_role_profile_title_names_the_role_when_the_model_does_not():
+    report = _fake_report([]).model_copy(update={"title": "Interview Preparation Report"})
+    result = _run(report, jd="I want to be a Backend Developer.")
+    assert result.report.title == "Backend Developer Interview Preparation"
+
+
+def test_model_title_kept_when_it_names_the_role():
+    report = _fake_report([]).model_copy(update={"title": "Backend Developer Prep Plan"})
+    result = _run(report, jd="I want to be a Backend Developer.")
+    assert result.report.title == "Backend Developer Prep Plan"
