@@ -42,6 +42,19 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=_now, sa_column=_timestamp_column())
 
 
+class SkillList(SQLModel, table=True):
+    """The skill list the LLM named for one job description or typed role,
+    stored the first time so every later analysis of the same input scores
+    against the same list. Keyed by a hash; the input text is not kept."""
+
+    __tablename__ = "skill_lists"
+
+    key: str = Field(primary_key=True)
+    role: str | None = Field(default=None, nullable=True)
+    skills: list = Field(default_factory=list, sa_column=_json_column())
+    created_at: datetime = Field(default_factory=_now, sa_column=_timestamp_column())
+
+
 class Report(SQLModel, table=True):
     __tablename__ = "reports"
 

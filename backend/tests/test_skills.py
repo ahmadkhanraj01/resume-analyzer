@@ -61,19 +61,59 @@ def test_single_letter_seed_ignores_initialisms():
 
 
 def test_llm_skill_pass_is_cached_per_jd():
-    skills._llm_skills_cache.clear()
     with patch.object(skills, "extract_skills_llm", return_value=["Go"]) as mock_llm:
         skills.extract_skills(JD, _settings())
         skills.extract_skills(JD, _settings())
         assert mock_llm.call_count == 1
         skills.extract_skills(JD + " and Rust.", _settings())
         assert mock_llm.call_count == 2
-    skills._llm_skills_cache.clear()
 
 
-def test_llm_skill_pass_does_not_cache_empty_results():
-    skills._llm_skills_cache.clear()
+def test_cached_jd_skills_ignore_whitespace_differences():
+    with patch.object(skills, "extract_skills_llm", return_value=["Go"]) as mock_llm:
+        skills.extract_skills(JD, _settings())
+        skills.extract_skills("  " + JD.replace(" ", "\n ") + "\n", _settings())
+        assert mock_llm.call_count == 1
+
+
+def test_first_skill_list_wins_so_the_score_cannot_drift():
+    # The provider answers differently the second time; the stored first
+    # answer must still be the one used.
+    with patch.object(skills, "extract_skills_llm", side_effect=[["Go"], ["Elixir"]]):
+        first, _ = skills.extract_skills(JD, _settings())
+        second, _ = skills.extract_skills(JD, _settings())
+    assert first == second
+    assert "Go" in first and "Elixir" not in first
+
+
+def test_role_profile_is_cached_case_insensitively():
+    with patch.object(
+        skills.llm, "infer_role_profile", return_value=("Game Developer", ["Unity", "C#"])
+    ) as mock_role:
+        a = skills.role_profile("game developer", _settings())
+        b = skills.role_profile("Game  Developer", _settings())
+    assert a == b == ("Game Developer", ["Unity", "C#"])
+    assert mock_role.call_count == 1
+
+
+def test_unrecognised_role_is_not_cached():
+    with patch.object(skills.llm, "infer_role_profile", return_value=(None, [])) as mock_role:
+        skills.role_profile("asdf qwer", _settings())
+        skills.role_profile("asdf qwer", _settings())
+    assert mock_role.call_count == 2
+
+
+def test_llm_skill_pass_caches_a_real_empty_answer():
+    # [] means the provider answered "no skills". Re-asking could get a
+    # non-empty list and route the same text down a different path.
     with patch.object(skills, "extract_skills_llm", return_value=[]) as mock_llm:
+        skills.extract_skills("I want to be a supply chain analyst", _settings())
+        skills.extract_skills("I want to be a Supply Chain Analyst", _settings())
+        assert mock_llm.call_count == 1
+
+
+def test_llm_skill_pass_does_not_cache_a_provider_outage():
+    with patch.object(skills, "extract_skills_llm", return_value=None) as mock_llm:
         skills.extract_skills(JD, _settings())
         skills.extract_skills(JD, _settings())
         assert mock_llm.call_count == 2

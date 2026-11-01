@@ -52,6 +52,7 @@ def run_analysis(
     job_description: str,
     self_description: str,
     settings: Settings,
+    store: skills.SkillListStore | None = None,
 ) -> AnalysisResult:
     # Per-stage timings are the only way to tell a slow Groq call from a
     # Gemini fallback or a cold embedding-model load after the fact.
@@ -75,13 +76,13 @@ def run_analysis(
     if curated:
         role_title, skill_list = curated
     else:
-        skill_list, mentions = skills.extract_skills(job_description, settings)
+        skill_list, mentions = skills.extract_skills(job_description, settings, store=store)
     if not skill_list and not curated:
         # Nothing to score against. Usually the user typed a target role
         # the curated set does not cover, so ask the model for a typical
         # profile before giving up. Scoring a resume against an empty list
         # would report 0% and mean nothing.
-        role_title, skill_list = llm.infer_role_profile(job_description, settings)
+        role_title, skill_list = skills.role_profile(job_description, settings, store)
         if not skill_list:
             raise NoSkillsFoundError()
     if role_title:

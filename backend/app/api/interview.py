@@ -9,6 +9,7 @@ from app.core.deps import CurrentUserDep, DbDep, SettingsDep
 from app.core.exceptions import FileTooLargeError, NotFoundError, RateLimitedError, ValidationError
 from app.core.limiter import get_limiter
 from app.db.models import Report
+from app.db.skill_lists import DbSkillListStore
 from app.schemas.career import CareerFitOut
 from app.schemas.common import Paginated
 from app.schemas.report import ReportOut, ReportSummaryOut
@@ -75,7 +76,12 @@ async def create_report(
 
     try:
         result = await run_in_threadpool(
-            run_analysis, resume_bytes, job_description, self_description, settings
+            run_analysis,
+            resume_bytes,
+            job_description,
+            self_description,
+            settings,
+            DbSkillListStore(db.get_bind()),
         )
     except Exception:
         limiter.release(user.id)

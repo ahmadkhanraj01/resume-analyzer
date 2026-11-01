@@ -124,12 +124,12 @@ def test_groq_failure_falls_back_to_gemini():
     assert report.match_score == 7
 
 
-def test_extract_skills_llm_returns_empty_list_on_total_failure():
+def test_extract_skills_llm_returns_none_on_total_failure():
     with (
         patch.object(llm, "_call_groq", side_effect=RuntimeError("down")),
         patch.object(llm, "_call_gemini", side_effect=RuntimeError("down")),
     ):
-        assert llm.extract_skills_llm("some jd text", _settings()) == []
+        assert llm.extract_skills_llm("some jd text", _settings()) is None
 
 
 def test_extract_skills_llm_parses_json_array():

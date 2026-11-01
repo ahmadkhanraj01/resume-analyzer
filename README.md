@@ -43,7 +43,9 @@ differently on every run. This one splits the work on purpose:
   (`BAAI/bge-small-en-v1.5` via fastembed), cosine similarity between the
   resume and each skill the job description asks for, and a weighted
   aggregate. No network call, no temperature, no drift: the same resume and
-  job description always produce the same score.
+  job description always produce the same score. The one LLM input to
+  scoring, naming the skills a posting asks for, is stored on first use and
+  reused, so it cannot drift between runs either.
 - **The LLM only generates text that needs generating.** Interview
   questions, the reasoning behind them, the prep plan, and resume edits. It
   never grades anything, and if it tries to return a score, that value is
@@ -99,7 +101,7 @@ each choice is [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 
-- Backend: 107 tests passing. PDF rendering tests skip themselves on a
+- Backend: 119 tests passing. PDF rendering tests skip themselves on a
   machine without WeasyPrint's native libraries; see
   [Running tests](#running-tests).
 - Frontend: builds cleanly, lints cleanly.

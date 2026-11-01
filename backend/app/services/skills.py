@@ -9,8 +9,10 @@ import hashlib
 import re
 from functools import lru_cache
 from pathlib import Path
+from typing import Protocol
 
 from app.core.config import Settings
+from app.services import llm
 from app.services.llm import extract_skills_llm
 
 SEED_PATH = Path(__file__).parent.parent / "data" / "skill_seeds.txt"
@@ -58,31 +60,95 @@ def _count_mentions(job_description: str, skill: str) -> int:
     return len(re.findall(_pattern(skill), job_description, re.IGNORECASE))
 
 
-# The same JD is often analyzed more than once (a second resume, a retry
-# after LLM_UNAVAILABLE). Keying the LLM pass on the JD's hash saves one of
-# the two provider round trips per analysis in that case. Bounded so it
-# cannot grow without limit on a 512 MB instance; an empty result is not
-# cached because it usually means the provider was down, not that the JD
-# has no skills.
-_LLM_SKILLS_CACHE_MAX = 256
-_llm_skills_cache: dict[str, list[str]] = {}
+class SkillListStore(Protocol):
+    """Where LLM-named skill lists are kept once named. The app passes a
+    Postgres-backed store (app/db/skill_lists.py); anything else gets the
+    in-memory one below."""
+
+    def get(self, key: str) -> tuple[str | None, list[str]] | None: ...
+
+    def put(self, key: str, role: str | None, skills: list[str]) -> None: ...
 
 
-def _llm_skills_cached(job_description: str, settings: Settings) -> list[str]:
-    key = hashlib.sha256(job_description.encode("utf-8")).hexdigest()
-    cached = _llm_skills_cache.get(key)
+class MemorySkillListStore:
+    """Per-process fallback for tests and scripts. Bounded so it cannot grow
+    without limit on a 512 MB instance; lost on restart, which is why the
+    app does not rely on it."""
+
+    def __init__(self, max_items: int = 256):
+        self._items: dict[str, tuple[str | None, list[str]]] = {}
+        self._max = max_items
+
+    def get(self, key: str) -> tuple[str | None, list[str]] | None:
+        item = self._items.get(key)
+        return (item[0], list(item[1])) if item else None
+
+    def put(self, key: str, role: str | None, skills: list[str]) -> None:
+        if key in self._items:
+            return
+        if len(self._items) >= self._max:
+            self._items.pop(next(iter(self._items)))
+        self._items[key] = (role, list(skills))
+
+    def clear(self) -> None:
+        self._items.clear()
+
+
+_memory_store = MemorySkillListStore()
+
+
+def _key(kind: str, text: str) -> str:
+    # Whitespace and case are folded so a re-paste with a trailing newline,
+    # or "Supply Chain Analyst" typed after "supply chain analyst", is the
+    # same input. Only the lookup key is folded; extraction still sees the
+    # original text.
+    norm = re.sub(r"\s+", " ", text).strip().lower()
+    return f"{kind}:" + hashlib.sha256(norm.encode("utf-8")).hexdigest()
+
+
+def _llm_skills_cached(
+    job_description: str, settings: Settings, store: SkillListStore
+) -> list[str]:
+    """The LLM pass is the only non-deterministic input to scoring, so its
+    first answer for a job description is kept and reused: the same posting
+    must always produce the same score. A real empty answer is stored too:
+    it is what sends a bare role sentence to the role-profile path, and a
+    later non-empty answer for the same text would send it down the other
+    path with a different score. A provider outage (None) is not stored."""
+    key = _key("jd", job_description)
+    cached = store.get(key)
     if cached is not None:
-        return list(cached)
+        return cached[1]
     result = extract_skills_llm(job_description, settings)
-    if result:
-        if len(_llm_skills_cache) >= _LLM_SKILLS_CACHE_MAX:
-            _llm_skills_cache.pop(next(iter(_llm_skills_cache)))
-        _llm_skills_cache[key] = list(result)
+    if result is None:
+        return []
+    store.put(key, None, result)
     return result
 
 
+def role_profile(
+    text: str, settings: Settings, store: SkillListStore | None = None
+) -> tuple[str | None, list[str]]:
+    """llm.infer_role_profile, kept the same way as the JD pass so a typed
+    role outside the curated set gets the same profile, and score, every
+    time. Only a recognised role is stored; (None, []) can mean every
+    provider failed."""
+    store = store or _memory_store
+    key = _key("role", text)
+    cached = store.get(key)
+    if cached is not None:
+        return cached
+    role, skills = llm.infer_role_profile(text, settings)
+    if role and skills:
+        store.put(key, role, skills)
+    return role, skills
+
+
 def extract_skills(
-    job_description: str, settings: Settings, use_llm: bool = True
+    job_description: str,
+    settings: Settings,
+    use_llm: bool = True,
+    store: SkillListStore | None = None,
 ) -> tuple[list[str], dict[str, int]]:
     """Union of the regex seed pass and the LLM pass, deduplicated
     case-insensitively, capped at MAX_SKILLS. Returns the skill list and a
@@ -93,7 +159,8 @@ def extract_skills(
     always lack.
     """
     seed_skills = _seed_matches(job_description)
-    llm_skills = _llm_skills_cached(job_description, settings) if use_llm else []
+    store = store or _memory_store
+    llm_skills = _llm_skills_cached(job_description, settings, store) if use_llm else []
 
     seen: dict[str, str] = {}  # lowercase -> original casing, first occurrence wins
     for skill in seed_skills + llm_skills:

@@ -136,6 +136,15 @@ reports
   created_at        timestamptz
 ```
 
+skill_lists
+  key               text pk     -- "jd:" or "role:" + sha256 of folded text
+  role              text null   -- set for an inferred role profile
+  skills            jsonb       -- the LLM's first answer, reused forever
+  created_at        timestamptz
+
+`skill_lists` is what makes a pasted posting score the same every time: see
+"Skill extraction" in DESIGN.md.
+
 JSONB rather than child tables. The nested structures are read as whole
 documents and never queried by their inner fields, so normalizing them buys
 joins and nothing else. If a "search all reports by skill" feature ever lands,

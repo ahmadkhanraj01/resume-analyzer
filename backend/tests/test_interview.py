@@ -355,3 +355,20 @@ def test_history_shows_resume_filename_without_client_path(client, auth_headers)
     assert created.json()["resume_filename"] == "cv_final.pdf"
     item = client.get("/api/interview/", headers=headers).json()["items"][0]
     assert item["resume_filename"] == "cv_final.pdf"
+
+
+def test_same_posting_scores_the_same_when_the_llm_answers_differently(client, auth_headers):
+    # The real cause of score drift: the LLM names a different skill list
+    # on a second call. The stored first list must be reused.
+    headers = auth_headers()
+    with (
+        _mock_llm(),
+        patch.object(
+            skills, "extract_skills_llm", side_effect=[["Kafka", "Rust"], ["Elixir", "COBOL"]]
+        ),
+    ):
+        first = _upload_resume(client, headers).json()
+        skills._memory_store.clear()  # prove it is the database, not memory
+        second = _upload_resume(client, headers).json()
+    assert first["match_score"] == second["match_score"]
+    assert [g["skill"] for g in first["skill_gaps"]] == [g["skill"] for g in second["skill_gaps"]]

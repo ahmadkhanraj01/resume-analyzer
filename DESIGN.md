@@ -180,6 +180,17 @@ Two-pass approach:
 Union the two, deduplicate case-insensitively, cap at 25. This is the one place
 the LLM feeds into scoring, and only to name skills, never to grade them.
 
+Because the LLM pass is not deterministic, its first answer for a given job
+description is stored in the `skill_lists` table and reused for every later
+analysis of that text, so the same posting always scores against the same
+list. The key is a SHA-256 of the text with whitespace and case folded; the
+text itself is not stored. A real empty answer is stored too, since it is what
+routes a bare role sentence to the role-profile path, but a provider outage is
+not. LLM-inferred role profiles for roles outside the curated set are stored
+the same way. An in-memory cache was not enough: Render's free instance sleeps
+after 15 idle minutes and lost it, and the next analysis of the same posting
+could score differently.
+
 ### Similarity
 
 Resume text is chunked at roughly 200 tokens with 50 token overlap. Overlap

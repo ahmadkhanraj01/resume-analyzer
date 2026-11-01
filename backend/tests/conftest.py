@@ -16,7 +16,7 @@ from app.core import limiter as limiter_module
 from app.core.config import get_settings
 from app.core.deps import get_db
 from app.db import models  # noqa: F401  (registers tables on SQLModel.metadata)
-from app.services import llm
+from app.services import llm, skills
 from main import app
 
 
@@ -38,6 +38,15 @@ def no_live_llm():
         patch.object(llm, "_call_gemini", _blocked),
     ):
         yield
+
+
+@pytest.fixture(autouse=True)
+def fresh_skill_store():
+    """The in-memory skill list store is process-wide, so a list one test
+    stored would otherwise answer the next test that uses the same text."""
+    skills._memory_store.clear()
+    yield
+    skills._memory_store.clear()
 
 
 @pytest.fixture(autouse=True)

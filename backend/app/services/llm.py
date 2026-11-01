@@ -189,17 +189,20 @@ def _try_skills_on_provider(provider: str, prompt: str, settings: Settings) -> l
     return None
 
 
-def extract_skills_llm(job_description: str, settings: Settings) -> list[str]:
+def extract_skills_llm(job_description: str, settings: Settings) -> list[str] | None:
     """The LLM pass in the skill extraction union: loose, high recall. Unlike
     generate_report, failure here is not fatal to the analysis; the regex
-    seed pass in services/skills.py still runs. Returns [] rather than
-    raising so one flaky provider call cannot sink the whole request."""
+    seed pass in services/skills.py still runs. Returns None rather than
+    raising when every provider fails, so one flaky provider call cannot
+    sink the whole request. None and [] differ on purpose: [] is a real
+    answer ("no skills here") that the caller stores, None is an outage
+    it must not store."""
     prompt = skill_extraction_prompt(job_description)
     for provider in PROVIDERS:
         skills = _try_skills_on_provider(provider, prompt, settings)
         if skills is not None:
             return skills
-    return []
+    return None
 
 
 def _parse_role_profile(raw: str) -> tuple[str | None, list[str]]:
