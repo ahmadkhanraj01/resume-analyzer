@@ -1,0 +1,49 @@
+# Render Blueprint: the API as a free Docker web service and the React app as
+# a free static site. The database is a free Neon Postgres, not a Render one
+# (Render's free database is deleted after 30 days).
+#
+# Values marked sync: false are prompted for once, in the dashboard, when the
+# Blueprint is first applied. They never live in this file.
+services:
+  - type: web
+    name: resume-analyzer-api
+    runtime: docker
+    plan: free
+    region: oregon
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL # Neon pooled connection string
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CORS_ORIGINS # the static site's URL, e.g. https://resume-analyzer-web.onrender.com
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: JWT_EXPIRE_MINUTES
+        value: "1440"
+
+  - type: web
+    name: resume-analyzer-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeploy: true
+    # Client-side routes (/reports, /reports/:id) must serve the app shell.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL # the API's URL plus /api, e.g. https://resume-analyzer-api.onrender.com/api
+        sync: false

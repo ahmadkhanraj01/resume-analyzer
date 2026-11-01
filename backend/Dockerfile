@@ -38,6 +38,9 @@ USER app
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -fsS http://localhost:8000/api/health || exit 1
+    CMD curl -fsS http://localhost:${PORT:-8000}/api/health || exit 1
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Migrate, then serve. Render's free tier has no pre-deploy command, so the
+# container applies pending migrations itself; with a single instance there
+# is no race. Render sets PORT; locally it falls back to 8000.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]

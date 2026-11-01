@@ -26,7 +26,7 @@ extension).
 
 ```
                  ┌──────────────────────────┐
-                 │   React + Vite (Vercel)  │
+                 │   React + Vite (Render)  │
                  │   axios + Bearer token   │
                  └───────────┬──────────────┘
                              │  HTTPS / JSON
@@ -268,9 +268,11 @@ to httpOnly cookies.
 
 | Layer    | Host              | Notes                                      |
 | -------- | ----------------- | ------------------------------------------ |
-| Frontend | Vercel            | static build, `VITE_API_URL` at build time |
-| Backend  | Render (Docker)   | uvicorn, single worker on free tier        |
-| Database | Supabase or Neon  | pooled connection string                   |
+| Frontend | Render static site | static build, `VITE_API_URL` at build time |
+| Backend  | Render (Docker)    | uvicorn, single worker on free tier; runs `alembic upgrade head` on start |
+| Database | Neon (free tier)   | pooled connection string                   |
+
+All three are free tiers, described in `render.yaml` at the repo root.
 
 **Docker matters here.** The fastembed model is baked into the image at build
 time rather than downloaded on first request. Without that, the first user after
