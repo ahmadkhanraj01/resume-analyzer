@@ -63,6 +63,20 @@ around the missing or weak skills above. In skill_gaps, use each skill's
 name exactly as written in the list, without the parenthesised examples;
 the parentheses only show what the name covers. The match_score field is
 required by the schema but is ignored; fill it with your best estimate.
+
+Also suggest how to improve the resume itself for this job:
+- resume_keywords: up to 15 terms from the job description that the resume
+  does not already contain, written exactly as the job description writes
+  them so applicant tracking systems match them. Only include terms the
+  candidate could plausibly claim given their resume and self description;
+  a keyword they cannot back up in an interview does more harm than good.
+- resume_rewrites: up to 5 of the weakest resume lines, rewritten to lead
+  with a strong verb, show impact, and use the job description's wording.
+  "original" must be copied verbatim from the resume. "improved" must not
+  invent employers, numbers, tools, or results the resume does not support;
+  where a metric would help but none is given, write a placeholder such as
+  "[X%]" for the candidate to fill in. "reason" says in one sentence why
+  the new line is stronger for this job.
 """
 
 

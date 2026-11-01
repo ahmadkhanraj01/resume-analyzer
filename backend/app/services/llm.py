@@ -26,12 +26,12 @@ logger = logging.getLogger(__name__)
 PROVIDERS = ("groq", "gemini")
 
 # The full report is a fair amount of JSON (up to 12 skill gaps, 16
-# questions, 14 prep days); the skill list is one short JSON array. Reasoning
+# questions, 14 prep days, 15 keywords, 5 bullet rewrites); the skill list is one short JSON array. Reasoning
 # models (see _REASONING_MODEL_MARKERS) spend part of this same budget on
 # hidden chain-of-thought before emitting content, so it needs real headroom
 # or the response gets cut off mid-JSON with finish_reason "length" and
 # never reaches the validator.
-REPORT_MAX_TOKENS = 6000
+REPORT_MAX_TOKENS = 7000
 SKILLS_MAX_TOKENS = 1024
 
 # Fewer than this for a recognised role is treated as an invalid response.

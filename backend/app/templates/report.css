@@ -61,6 +61,25 @@ h2 {
     border-left: 2px solid #ddd;
 }
 
+.rewrite {
+    margin-bottom: 0.8em;
+    page-break-inside: avoid;
+}
+
+.rewrite .before {
+    color: #777;
+}
+
+.rewrite .after {
+    font-weight: bold;
+}
+
+.rewrite .intention {
+    color: #555;
+    font-size: 9.5pt;
+    font-style: italic;
+}
+
 .prep-day {
     margin-bottom: 0.6em;
     page-break-inside: avoid;

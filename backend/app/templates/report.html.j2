@@ -22,6 +22,20 @@
   </div>
   {% endfor %}
 
+  {% if resume_keywords or resume_rewrites %}
+  <h2>Resume improvements</h2>
+  {% if resume_keywords %}
+  <p><strong>Keywords to add:</strong> {{ resume_keywords | join(", ") }}</p>
+  {% endif %}
+  {% for r in resume_rewrites %}
+  <div class="rewrite">
+    <div class="before">Before: {{ r.original }}</div>
+    <div class="after">After: {{ r.improved }}</div>
+    <div class="intention">{{ r.reason }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
   <h2>Technical questions</h2>
   {% for q in technical_qs %}
   <div class="question">

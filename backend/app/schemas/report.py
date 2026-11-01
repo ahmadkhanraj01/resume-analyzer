@@ -47,9 +47,19 @@ class PrepDay(BaseModel):
     tasks: list[str] = Field(min_length=1, max_length=5)
 
 
+class BulletRewrite(BaseModel):
+    original: str  # a line copied from the resume; checked against it
+    improved: str
+    reason: str = Field(max_length=300)
+
+
 class InterviewReport(BaseModel):
     """What the LLM must produce. match_score is accepted so the model has a
-    field to fill, but the value is always overwritten by scoring.py."""
+    field to fill, but the value is always overwritten by scoring.py.
+
+    The resume_* fields default to empty so reports stored before they
+    existed still validate, and a model that skips them still produces a
+    usable report instead of a retry."""
 
     title: str
     match_score: int = Field(ge=0, le=100)  # overwritten by scoring
@@ -57,6 +67,8 @@ class InterviewReport(BaseModel):
     technical_qs: list[Question] = Field(max_length=10)
     behavioral_qs: list[Question] = Field(max_length=6)
     preparation_plan: list[PrepDay] = Field(max_length=14)
+    resume_keywords: list[str] = Field(default_factory=list, max_length=15)
+    resume_rewrites: list[BulletRewrite] = Field(default_factory=list, max_length=5)
 
 
 class ReportOut(InterviewReport):

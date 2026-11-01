@@ -51,6 +51,10 @@ SAMPLE_REPORT = {
         }
     ],
     "preparation_plan": [{"day": 1, "focus": "Fundamentals", "tasks": ["Review the JD"]}],
+    "resume_keywords": ["Kafka", "gRPC"],
+    "resume_rewrites": [
+        {"original": "Wrote APIs.", "improved": "Built REST APIs.", "reason": "Specific."}
+    ],
 }
 
 

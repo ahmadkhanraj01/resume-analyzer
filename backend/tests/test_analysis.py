@@ -160,3 +160,43 @@ def test_prompt_shows_aliases_for_umbrella_skills():
 
 def _run_report_for(jd: str, gaps: list[dict]) -> InterviewReport:
     return _run(_fake_report(gaps), jd=jd).report
+
+
+def test_resume_keywords_drop_ones_already_on_resume_and_duplicates():
+    report = _fake_report([]).model_copy(
+        update={"resume_keywords": ["Kafka", "Docker", "kafka", "Event-driven architecture"]}
+    )
+    result = _run_report(report)
+    # Docker is on the fixture resume; "kafka" repeats "Kafka".
+    assert result.resume_keywords == ["Kafka", "Event-driven architecture"]
+
+
+def test_resume_rewrites_keep_only_lines_actually_on_the_resume():
+    report = InterviewReport.model_validate(
+        {
+            **_fake_report([]).model_dump(),
+            "resume_rewrites": [
+                {
+                    # Wraps onto a second line in the extracted PDF text.
+                    "original": "- Built and operated a Python and FastAPI service handling "
+                    "2 million requests per day.",
+                    "improved": "Scaled a Python/FastAPI service to 2M requests per day.",
+                    "reason": "Leads with impact.",
+                },
+                {
+                    "original": "Led a team of 40 engineers at Initech.",
+                    "improved": "Directed 40 engineers.",
+                    "reason": "Invented by the model.",
+                },
+                {
+                    "original": "Introduced pytest coverage across the payments module.",
+                    "improved": "Introduced pytest coverage across the payments module.",
+                    "reason": "Unchanged.",
+                },
+            ],
+        }
+    )
+    result = _run_report(report)
+    assert [r.improved for r in result.resume_rewrites] == [
+        "Scaled a Python/FastAPI service to 2M requests per day."
+    ]

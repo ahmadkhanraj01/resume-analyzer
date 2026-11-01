@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { suggestCareers } from "../api/interview";
 import { messageForError } from "../lib/errorMessages";
 
@@ -8,66 +8,93 @@ function tone(score) {
   return score >= 65 ? "good" : score >= 40 ? "partial" : "weak";
 }
 
-// Ranks the uploaded resume against the curated role profiles. Runs before
-// any analysis and never calls the LLM, so it is a few seconds at most; a
+// Ranks the uploaded resume against the curated role profiles as soon as a
+// file is chosen. Never calls the LLM, so it is a few seconds at most; a
 // plain busy state is enough here, unlike the full analysis.
 export default function CareerFit({ file, onPick }) {
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [forFile, setForFile] = useState(null);
+  // Bumped by "Try again" so the effect refetches for the same file.
+  const [attempt, setAttempt] = useState(0);
+  // Each outcome remembers which file and attempt it answers, so loading is
+  // derived (no outcome for the current pair yet) instead of set in the effect.
+  const [outcome, setOutcome] = useState({ file: null, attempt: -1, data: null, error: "" });
+  const [picked, setPicked] = useState({ file: null, role: null });
 
-  const stale = result && forFile !== file;
-
-  async function run() {
-    if (!file || loading) return;
-    setError("");
-    setLoading(true);
-    try {
-      const data = await suggestCareers(file);
-      setResult(data);
-      setForFile(file);
-    } catch (err) {
-      setError(messageForError(err));
-    } finally {
-      setLoading(false);
-    }
-  }
+  useEffect(() => {
+    if (!file) return;
+    // A slow response for a replaced file must not overwrite the newer one.
+    let current = true;
+    suggestCareers(file)
+      .then((data) => current && setOutcome({ file, attempt, data, error: "" }))
+      .catch(
+        (err) =>
+          current && setOutcome({ file, attempt, data: null, error: messageForError(err) })
+      );
+    return () => {
+      current = false;
+    };
+  }, [file, attempt]);
 
   if (!file) return null;
+
+  const fresh = outcome.file === file && outcome.attempt === attempt;
+  const loading = !fresh;
+  const result = fresh ? outcome.data : null;
+  const error = fresh ? outcome.error : "";
+  const pickedRole = picked.file === file ? picked.role : null;
+
+  function pick(role) {
+    setPicked({ file, role });
+    onPick(role);
+  }
 
   return (
     <section className="career-fit" aria-live="polite">
       <div className="career-fit__head">
         <div>
-          <h2>Career fit</h2>
+          <h2>Suggested roles</h2>
           <p className="section-lead">
-            Not sure what to target? Score this resume against typical postings for common
-            roles and pick one to analyze.
+            Your resume scored against typical postings for common roles. Pick one to analyze, or
+            paste a specific job description below.
           </p>
         </div>
-        <button type="button" onClick={run} disabled={loading} className="button--secondary">
-          {loading ? "Scoring…" : result && !stale ? "Rescore" : "Suggest roles"}
-        </button>
       </div>
 
-      {error && <p className="field-error">{error}</p>}
+      {loading && (
+        <div className="career-fit__loading">
+          <span className="spinner career-fit__spinner" aria-hidden="true" />
+          <span>Matching your resume to roles…</span>
+        </div>
+      )}
 
-      {result && !stale && (
+      {error && (
+        <p className="field-error">
+          {error}{" "}
+          <button type="button" className="button--secondary" onClick={() => setAttempt((a) => a + 1)}>
+            Try again
+          </button>
+        </p>
+      )}
+
+      {result && (
         <ol className="career-fit__list">
           {result.fits.slice(0, TOP_N).map((fit) => (
             <li key={fit.role} className="career-fit__item">
-              <button
-                type="button"
-                className="career-fit__pick"
-                onClick={() => onPick(fit.role)}
-                title={`Use "${fit.role}" as the target role`}
-              >
+              <div className="career-fit__row">
                 <span className={`score-pill score-pill--${tone(fit.match_score)}`}>
                   {fit.match_score}%
                 </span>
                 <span className="career-fit__role">{fit.role}</span>
-              </button>
+                <button
+                  type="button"
+                  className={
+                    pickedRole === fit.role ? "career-fit__use" : "career-fit__use button--secondary"
+                  }
+                  onClick={() => pick(fit.role)}
+                  aria-pressed={pickedRole === fit.role}
+                >
+                  {pickedRole === fit.role ? "Selected" : "Use this role"}
+                </button>
+              </div>
               <div className="career-fit__skills">
                 {fit.covered_skills.length ? (
                   <>
@@ -82,7 +109,7 @@ export default function CareerFit({ file, onPick }) {
           ))}
         </ol>
       )}
-      {result && !stale && (
+      {result && (
         <p className="career-fit__foot">
           Top {TOP_N} of {result.profile_count} roles. Scores are the share of a typical
           posting&apos;s skills your resume already names, so a strong resume for a role

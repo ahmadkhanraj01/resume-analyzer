@@ -1071,6 +1071,115 @@ label {
   }
 }
 
+// Resume optimization (report page)
+
+.resume-tips {
+  h3 {
+    font-size: 0.98rem;
+    margin: 0 0 0.5rem;
+  }
+
+  &__block {
+    margin-bottom: 1.25rem;
+  }
+
+  &__block-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+
+    h3 {
+      margin: 0;
+    }
+  }
+
+  &__copy {
+    flex-shrink: 0;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.8rem;
+  }
+
+  &__keywords {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+
+    li {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      background: $color-primary-soft;
+      color: $color-primary-dark;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+  }
+
+  &__rewrites {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  &__rewrite {
+    border: 1px solid $color-border;
+    border-radius: $radius;
+    padding: 0.8rem 1rem;
+    background: $color-surface;
+    box-shadow: $shadow-sm;
+  }
+
+  &__before {
+    color: $color-muted;
+    margin-bottom: 0.4rem;
+  }
+
+  &__after {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-weight: 600;
+
+    .resume-tips__copy {
+      margin-left: auto;
+    }
+  }
+
+  &__tag {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    margin-right: 0.35rem;
+    border-radius: 999px;
+    background: $color-surface-2;
+    border: 1px solid $color-border;
+    color: $color-muted;
+
+    .resume-tips__after & {
+      background: $color-primary-soft;
+      border-color: $color-primary-soft;
+      color: $color-primary-dark;
+    }
+  }
+
+  &__reason {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    color: $color-muted;
+    font-style: italic;
+  }
+}
+
 // Career fit panel (new analysis page)
 
 .career-fit {
@@ -1115,24 +1224,36 @@ label {
     border-radius: $radius;
   }
 
-  &__pick {
+  &__loading {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    width: 100%;
-    padding: 0;
-    background: none;
-    border: none;
-    color: $color-text;
-    font: inherit;
-    font-weight: 700;
-    text-align: left;
-    cursor: pointer;
+    margin-top: 1rem;
+    color: $color-muted;
+    font-size: 0.9rem;
+  }
 
-    &:hover .career-fit__role {
-      color: $color-primary-dark;
-      text-decoration: underline;
-    }
+  &__spinner {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__role {
+    flex: 1;
+    font-weight: 700;
+  }
+
+  &__use {
+    flex-shrink: 0;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
   }
 
   &__skills {

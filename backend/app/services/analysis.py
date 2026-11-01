@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 from app.core.config import Settings
 from app.core.exceptions import NoSkillsFoundError
-from app.schemas.report import InterviewReport, ScoredAgainst, SkillGap
+from app.schemas.report import BulletRewrite, InterviewReport, ScoredAgainst, SkillGap
 from app.services import careers, extract, llm, scoring, skills
 
 logger = logging.getLogger(__name__)
@@ -149,7 +149,12 @@ def run_analysis(
     # match_score is set here as well as in llm.generate_report so the rule
     # holds even if that wrapper is bypassed or replaced.
     report = report.model_copy(
-        update={"skill_gaps": gaps, "match_score": scoring_result.match_score}
+        update={
+            "skill_gaps": gaps,
+            "match_score": scoring_result.match_score,
+            "resume_keywords": _new_keywords(report.resume_keywords, resume_text),
+            "resume_rewrites": _grounded_rewrites(report.resume_rewrites, resume_text),
+        }
     )
 
     return AnalysisResult(
@@ -191,6 +196,42 @@ def _advice_lookup(
         if skill is not None and skill not in advice:
             advice[skill] = gap.advice
     return advice
+
+
+def _squash(text: str) -> str:
+    # PDF extraction breaks lines and doubles spaces unpredictably, so
+    # compare text with all whitespace runs collapsed.
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def _new_keywords(keywords: list[str], resume_text: str) -> list[str]:
+    """Drops keywords the resume already contains and case-insensitive
+    duplicates. Telling someone to add a word they already have makes every
+    other suggestion look careless."""
+    resume = _squash(resume_text)
+    seen: set[str] = set()
+    kept = []
+    for keyword in keywords:
+        key = _squash(keyword)
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        if not re.search(r"(?<!\w)" + re.escape(key) + r"(?!\w)", resume):
+            kept.append(keyword.strip())
+    return kept
+
+
+def _grounded_rewrites(rewrites: list[BulletRewrite], resume_text: str) -> list[BulletRewrite]:
+    """Keeps only rewrites whose original line is actually on the resume.
+    A rewrite of a line the model invented tells the user to change text
+    they never wrote."""
+    resume = _squash(resume_text)
+    return [
+        r
+        for r in rewrites
+        if _squash(r.original.lstrip("-•*· ")) in resume
+        and _squash(r.original) != _squash(r.improved)
+    ]
 
 
 def _role_profile_description(role: str, skill_list: list[str], original: str) -> str:

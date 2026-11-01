@@ -133,6 +133,11 @@ class PrepDay(BaseModel):
     focus: str
     tasks: list[str] = Field(min_length=1, max_length=5)
 
+class BulletRewrite(BaseModel):
+    original: str                           # verbatim resume line; checked
+    improved: str
+    reason:   str = Field(max_length=300)
+
 class InterviewReport(BaseModel):
     title:             str
     match_score:       int = Field(ge=0, le=100)   # overwritten by scoring
@@ -140,7 +145,15 @@ class InterviewReport(BaseModel):
     technical_qs:      list[Question]        = Field(max_length=10)
     behavioral_qs:     list[Question]        = Field(max_length=6)
     preparation_plan:  list[PrepDay]         = Field(max_length=14)
+    resume_keywords:   list[str]             = Field(default=[], max_length=15)
+    resume_rewrites:   list[BulletRewrite]   = Field(default=[], max_length=5)
 ```
+
+`resume_keywords` and `resume_rewrites` are the resume optimization
+suggestions. Both are LLM output filtered by `services/analysis.py`: a keyword
+the resume already contains is dropped, and so is a rewrite whose `original`
+is not actually on the resume. They default to empty so older reports and a
+model that skips them still validate.
 
 Every list has an upper bound. Without one, a verbose model returns forty
 questions, the response takes 60 seconds, and the UI becomes unreadable.

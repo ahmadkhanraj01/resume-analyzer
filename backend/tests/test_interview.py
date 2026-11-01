@@ -22,6 +22,14 @@ FAKE_REPORT = InterviewReport(
         {"question": "Describe an incident you fixed.", "intention": "ownership", "answer": "..."}
     ],
     preparation_plan=[{"day": 1, "focus": "Fundamentals", "tasks": ["Review the JD"]}],
+    resume_keywords=["Kafka"],
+    resume_rewrites=[
+        {
+            "original": "Introduced pytest coverage across the payments module.",
+            "improved": "Raised payments module test coverage to [X%] with pytest.",
+            "reason": "Quantifies the result.",
+        }
+    ],
 )
 
 
@@ -313,3 +321,13 @@ def test_typed_role_containing_a_seed_skill_still_uses_role_profile(client, auth
     assert body["scored_against"] == "role_profile"
     assert body["role_title"] == "Flutter Developer"
     assert body["match_score"] < 100
+
+
+def test_resume_suggestions_are_stored_and_returned(client, auth_headers):
+    headers = auth_headers()
+    with _mock_llm():
+        created = _upload_resume(client, headers)
+    assert created.status_code == 201, created.text
+    body = client.get(f"/api/interview/{created.json()['id']}", headers=headers).json()
+    assert body["resume_keywords"] == ["Kafka"]
+    assert body["resume_rewrites"][0]["improved"].startswith("Raised payments module")

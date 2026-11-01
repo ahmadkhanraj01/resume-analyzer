@@ -60,4 +60,6 @@ class Report(SQLModel, table=True):
     technical_qs: list = Field(default_factory=list, sa_column=_json_column())
     behavioral_qs: list = Field(default_factory=list, sa_column=_json_column())
     preparation_plan: list = Field(default_factory=list, sa_column=_json_column())
+    resume_keywords: list = Field(default_factory=list, sa_column=_json_column())
+    resume_rewrites: list = Field(default_factory=list, sa_column=_json_column())
     created_at: datetime = Field(default_factory=_now, sa_column=_timestamp_column(index=True))

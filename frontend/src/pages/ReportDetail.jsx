@@ -6,6 +6,7 @@ import ScoreRing from "../components/ScoreRing";
 import SkillGapList from "../components/SkillGapList";
 import QuestionCard from "../components/QuestionCard";
 import PrepPlan from "../components/PrepPlan";
+import ResumeSuggestions from "../components/ResumeSuggestions";
 import Spinner from "../components/Spinner";
 import ErrorBanner from "../components/ErrorBanner";
 
@@ -94,8 +95,8 @@ export default function ReportDetail() {
 
       <ErrorBanner message={actionError} />
 
-      {/* Score first, then gaps, then questions, then the plan: users want
-          the verdict before the detail. */}
+      {/* Score first, then gaps and resume fixes, then questions, then the
+          plan: users want the verdict before the detail. */}
       <ScoreRing score={report.match_score} />
 
       {report.scored_against === "role_profile" && (
@@ -113,6 +114,11 @@ export default function ReportDetail() {
         </p>
         <SkillGapList gaps={report.skill_gaps} />
       </section>
+
+      <ResumeSuggestions
+        keywords={report.resume_keywords ?? []}
+        rewrites={report.resume_rewrites ?? []}
+      />
 
       <section>
         <h2>Technical questions</h2>

@@ -84,6 +84,8 @@ async def create_report(
         technical_qs=[q.model_dump(mode="json") for q in result.report.technical_qs],
         behavioral_qs=[q.model_dump(mode="json") for q in result.report.behavioral_qs],
         preparation_plan=[p.model_dump(mode="json") for p in result.report.preparation_plan],
+        resume_keywords=result.report.resume_keywords,
+        resume_rewrites=[r.model_dump(mode="json") for r in result.report.resume_rewrites],
     )
     db.add(report)
     db.commit()
