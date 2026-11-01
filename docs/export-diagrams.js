@@ -2,6 +2,16 @@
 /**
  * Exports every page of docs/architecture.drawio to a PNG in docs/.
  *
+ * As of November 2026 embed.diagrams.net answers headless browsers with a
+ * 403, so this script times out. The draw.io desktop app's CLI does the same
+ * export locally and is what produced the current PNGs (page index is
+ * 1-based):
+ *
+ *   drawio -x -f png -p 1 -s 2 -b 20 -o architecture.png architecture.drawio
+ *   drawio -x -f png -p 2 -s 2 -b 20 -o request-flows.png architecture.drawio
+ *
+ * On Linux the AppImage may need --no-sandbox before -x.
+ *
  * Usage (needs Node 20+, a Chrome or Chromium, and network access to
  * embed.diagrams.net):
  *

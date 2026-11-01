@@ -16,7 +16,7 @@
                 <mxCell id="frontend_title" value="&lt;b&gt;Frontend&lt;/b&gt; (React + Vite, Vercel)" style="text;html=1;align=left;verticalAlign=middle;fontSize=13;" parent="1" vertex="1">
                     <mxGeometry x="52" y="106" width="280" height="24" as="geometry"/>
                 </mxCell>
-                <mxCell id="fe_pages" value="Pages: Login, Register, NewAnalysis, History, ReportDetail (score tape, resume edits)" style="text;html=1;align=left;verticalAlign=top;fontSize=11;whiteSpace=wrap;" parent="1" vertex="1">
+                <mxCell id="fe_pages" value="Pages: Login, Register, NewAnalysis, History, ReportDetail" style="text;html=1;align=left;verticalAlign=top;fontSize=11;whiteSpace=wrap;" parent="1" vertex="1">
                     <mxGeometry x="52" y="136" width="276" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="fe_careerfit" value="CareerFit panel&lt;br&gt;(scores on upload)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#1F7A45;fontSize=11;" parent="1" vertex="1">
@@ -61,7 +61,7 @@
                 <mxCell id="services_label" value="app/services (framework-free, raise domain exceptions, run in threadpool)" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#5F6B64;" parent="1" vertex="1">
                     <mxGeometry x="440" y="254" width="500" height="18" as="geometry"/>
                 </mxCell>
-                <mxCell id="svc_analysis" value="&lt;b&gt;analysis&lt;/b&gt;&lt;br&gt;extract -&gt; pick rubric -&gt; score -&gt; report -&gt; filter resume edits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2E8;strokeColor=#1F7A45;fontSize=11;" parent="1" vertex="1">
+                <mxCell id="svc_analysis" value="&lt;b&gt;analysis&lt;/b&gt;&lt;br&gt;extract -&gt; pick rubric -&gt; score&lt;br&gt;-&gt; report -&gt; filter resume edits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2E8;strokeColor=#1F7A45;fontSize=11;" parent="1" vertex="1">
                     <mxGeometry x="444" y="276" width="200" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="svc_careers" value="&lt;b&gt;careers&lt;/b&gt;&lt;br&gt;rank resume vs every profile" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2E8;strokeColor=#1F7A45;fontSize=11;" parent="1" vertex="1">
