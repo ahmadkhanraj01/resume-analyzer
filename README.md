@@ -33,6 +33,12 @@ against the resume text, so the model cannot rewrite a line that is not
 there. The full page continues with interview questions and a 14-day
 preparation plan.*
 
+![History page listing past reports with resume file name, target type, date, and score](docs/history.png)
+
+*History: every report shows which resume it measured, whether it scored
+against a curated role profile or a pasted job description, when it ran,
+and its score, newest first.*
+
 ## Why this exists
 
 Most "AI resume tool" side projects are a thin wrapper around a single LLM
