@@ -8,9 +8,10 @@ a PDF. Not sure what to target? As soon as a resume is uploaded, the app
 ranks it against 36 curated role profiles and offers the best fits as
 one-click targets.
 
-**Live app:** not deployed yet. See [Deployment](#deployment) below; the
-project is set up for a free deploy on Vercel (API and frontend) with a
-Neon Postgres database.
+**Live app:** https://resume-analyzer-five-delta-75.vercel.app (API:
+https://resume-analyzer-6phf.vercel.app/api/health). Free tiers on Vercel
+and Neon; see [Deployment](#deployment) below. The first request after a
+quiet spell takes a few extra seconds while the API starts up.
 
 ![New-analysis page with suggested roles ranked for the uploaded resume](docs/career-fit.png)
 

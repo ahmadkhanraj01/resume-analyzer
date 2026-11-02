@@ -7,9 +7,10 @@ says which key, never the value.
 
 **Goal:** a live app on free tiers only, with no paid plans.
 
-**Status (2026-11-01):** the database and frontend are live; the backend is
-not deployed yet because every Docker host tried so far wants a card or a
-paid plan. See [Where it stands](#where-it-stands).
+**Status (2026-11-02): live.** Frontend
+https://resume-analyzer-five-delta-75.vercel.app, API
+https://resume-analyzer-6phf.vercel.app, database on Neon. Sections 1 to 7
+are the path there, including the dead ends; section 8 is how it went live.
 
 | Part | Host | State |
 | --- | --- | --- |
@@ -294,3 +295,45 @@ What had to change, and why:
 Checks: 126 backend tests pass (5 new rate-limit tests and a
 `PDF_UNAVAILABLE` router test), the new migration upgrades and downgrades
 cleanly, and frontend lint and build pass.
+
+### Getting the API to start on Vercel
+
+Two more failures, both read from Vercel's runtime logs:
+
+1. **`ModuleNotFoundError: No module named 'fastapi'`:** Vercel treated
+   `backend/pyproject.toml`, which held only ruff and pytest settings, as
+   the dependency file and ignored `requirements.txt`. Fixed in `cdbb80c`
+   by moving those settings to `ruff.toml` and `pytest.ini`.
+2. **`Read-only file system (os error 30)`** while downloading the
+   embedding model: only `/tmp` is writable on Vercel, and huggingface_hub
+   caches under the home directory. fastembed retried for about 40 s, then
+   startup failed. Fixed in `7e9831a`: when `VERCEL` is set,
+   `app/__init__.py` points `HF_HOME` and `FASTEMBED_CACHE_PATH` at `/tmp`.
+   A local run with an unwritable home and an empty cache downloaded the
+   model cleanly.
+
+Also along the way: the frontend's `VITE_API_URL` still pointed at the
+planned Hugging Face address and had to be changed to the API's URL plus a
+redeploy; Vercel's warning about the public `VITE_` prefix is expected for a
+URL. The Vercel CLI (65.9.0) and the Vercel Claude Code plugin were
+installed so logs could be read directly.
+
+### Live check (2026-11-02)
+
+| Check | Result |
+| --- | --- |
+| Health | `{"ok":true}` in 0.8 s |
+| CORS preflight from the frontend | 200, origin allowed |
+| Sign-up | 201 |
+| Career suggestions | 200 in 4.2 s; Backend Developer at 63% |
+| Analysis (Backend Developer) | 201 in 11.7 s; 63%, the same as local and Docker; 6 gaps, 6 keywords, 5 rewrites |
+| History | 200, one report |
+| PDF | 503 `PDF_UNAVAILABLE`, as designed (the frontend opens print) |
+| Direct link to `/reports` | 200 |
+
+The test report was deleted through the API. The empty test account
+`livecheck-1793600761@example.com` remains, since there is no
+account-deletion endpoint.
+
+**Open:** the `rate_hits` migration (`d9e0f1a2b3c4`) was not yet applied to
+Neon, so rate limits were failing open with a logged warning.
