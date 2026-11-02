@@ -39,7 +39,7 @@ backend/
 ├── .dockerignore                 [0]
 ├── requirements.txt              [0]
 ├── .env.example                  [0] every key, no values
-├── pyproject.toml                [0] ruff + pytest config
+├── ruff.toml, pytest.ini          [0] lint and test config (no pyproject.toml: Vercel would read it as the dependency list)
 ├── alembic.ini                   [1]
 ├── migrations/                   [1] alembic, versions/ committed
 │
