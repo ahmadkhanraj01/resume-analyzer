@@ -96,6 +96,7 @@ One shape everywhere, produced by a single exception handler:
 | `NO_SKILLS_FOUND`      | 422  | JD names no skills and no recognizable role |
 | `LLM_UNAVAILABLE`      | 503  | both providers failed                      |
 | `PDF_RENDER_FAILED`    | 500  | WeasyPrint could not render the report     |
+| `PDF_UNAVAILABLE`      | 503  | No PDF engine on this host (Vercel); the frontend falls back to browser print |
 | `RATE_LIMITED`         | 429  | over the per-user analysis limit           |
 
 A report id belonging to another user returns 404, not 403. 403 confirms the id

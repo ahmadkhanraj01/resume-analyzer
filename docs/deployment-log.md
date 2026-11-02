@@ -257,3 +257,40 @@ Sources disagree, and several comparison sites are written by competitors.
 - The local `.env`, including the Neon password and the Groq and Gemini
   keys, was read in this chat once, with your permission. Rotating those
   keys after the deploy is a cheap precaution.
+
+---
+
+## 8. Switching the backend to Vercel (2026-11-02)
+
+With Render needing a card and Hugging Face needing PRO, the backend moved to
+Vercel's Python runtime: free on Hobby, no card, and the account already
+existed. Hobby limits checked against this app: 2 GB memory (peak use is
+about 275 MB), 300 s per request (an analysis takes 20 to 60 s), and a
+500 MB Python bundle.
+
+What had to change, and why:
+
+- **PDF export:** WeasyPrint needs Pango and Cairo, which Vercel's runtime
+  does not have. A failed import now raises `PDF_UNAVAILABLE` (503) instead
+  of the generic `PDF_RENDER_FAILED`, and the frontend opens the browser's
+  print dialog. A print stylesheet hides the app chrome and shows every
+  model answer; a test print came out as six clean A4 pages. Fixed on the
+  way: PDF errors arrived as a Blob, so the frontend never saw their code.
+- **Rate limits:** the in-memory counter would be per running copy on a
+  serverless host. Against Postgres they now live in a `rate_hits` table
+  (migration `d9e0f1a2b3c4`), with a per-bucket advisory lock so a burst
+  cannot slip past the count. Database errors fail open. SQLite (dev,
+  tests) keeps the in-memory limiter.
+- **Client IP for login throttling:** behind Vercel's proxy the socket peer
+  is the proxy. When `VERCEL=1` (set by Vercel), the IP comes from
+  `x-real-ip`, which Vercel overwrites; it is never trusted elsewhere.
+- **Config:** `backend/vercel.json` sets `maxDuration: 300` and leaves tests
+  and migrations out of the bundle. Vercel finds `app` in `backend/main.py`
+  on its own.
+- **Migrations:** no container start on Vercel, so they are applied by hand
+  with `DATABASE_URL_UNPOOLED` before a deploy that adds one.
+- **Removed:** `deploy/hf_space.py`.
+
+Checks: 126 backend tests pass (5 new rate-limit tests and a
+`PDF_UNAVAILABLE` router test), the new migration upgrades and downgrades
+cleanly, and frontend lint and build pass.

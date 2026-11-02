@@ -1,9 +1,10 @@
 """In-process rate limiter behind one interface.
 
-A dict keyed by user id is correct for a single worker on a single instance,
-which is what Phase 0 deploys. It becomes wrong the moment a second worker
-exists; swap the body of RateLimiter for a Redis-backed one without touching
-callers if that day comes.
+A dict keyed by user id is correct for a single worker on a single instance.
+It is wrong on a serverless host, where several short-lived copies of the
+app each keep their own count, so against Postgres the getters below return
+DbRateLimiter (app/db/rate_limits.py) instead. SQLite (local dev, tests)
+keeps the in-memory one. Callers see the same acquire/release either way.
 """
 
 import threading
@@ -46,24 +47,35 @@ class RateLimiter:
         return hits
 
 
-_limiter: RateLimiter | None = None
+def _make(per_hour: int, per_day: int, prefix: str):
+    # Imported here so app/core does not depend on app/db at import time.
+    from app.db.session import engine
+
+    if engine.dialect.name == "sqlite":
+        return RateLimiter(per_hour, per_day)
+    from app.db.rate_limits import DbRateLimiter
+
+    return DbRateLimiter(engine, per_hour, per_day, prefix)
 
 
-def get_limiter(per_hour: int, per_day: int) -> RateLimiter:
+_limiter = None
+
+
+def get_limiter(per_hour: int, per_day: int):
     global _limiter
     if _limiter is None:
-        _limiter = RateLimiter(per_hour, per_day)
+        _limiter = _make(per_hour, per_day, "analysis")
     return _limiter
 
 
-_auth_limiter: RateLimiter | None = None
+_auth_limiter = None
 
 
-def get_auth_limiter(per_hour: int) -> RateLimiter:
+def get_auth_limiter(per_hour: int):
     """Separate instance for register/login, keyed by client IP rather than
     user id. The day limit is the hour limit times 24 so only the hourly
     window is ever the binding one."""
     global _auth_limiter
     if _auth_limiter is None:
-        _auth_limiter = RateLimiter(per_hour, per_hour * 24)
+        _auth_limiter = _make(per_hour, per_hour * 24, "auth")
     return _auth_limiter

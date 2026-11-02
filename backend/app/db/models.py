@@ -78,3 +78,16 @@ class Report(SQLModel, table=True):
     resume_keywords: list = Field(default_factory=list, sa_column=_json_column())
     resume_rewrites: list = Field(default_factory=list, sa_column=_json_column())
     created_at: datetime = Field(default_factory=_now, sa_column=_timestamp_column(index=True))
+
+
+class RateHit(SQLModel, table=True):
+    """One counted attempt (an analysis, a login) for a rate-limit bucket
+    such as "analysis:<user id>" or "auth:<ip>". In the database rather than
+    process memory because serverless hosts run several short-lived copies
+    of the app, each of which would otherwise keep its own count."""
+
+    __tablename__ = "rate_hits"
+
+    id: int | None = Field(default=None, primary_key=True)
+    bucket: str = Field(index=True, nullable=False)
+    created_at: datetime = Field(default_factory=_now, sa_column=_timestamp_column(index=True))

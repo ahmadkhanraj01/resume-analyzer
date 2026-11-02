@@ -15,6 +15,8 @@ const ERROR_MESSAGES = {
     "No skills were found in that text, and it does not describe a role either. " +
     "Paste the full job posting with its requirements, or name the role you want.",
   PDF_RENDER_FAILED: "The PDF could not be generated. Try again.",
+  PDF_UNAVAILABLE:
+    "PDF export is not available here. Use your browser's print dialog and choose Save as PDF.",
   LLM_UNAVAILABLE: "Analysis failed. Try again in a moment.",
   RATE_LIMITED: "You've hit the analysis limit for now. Try again later.",
 };

@@ -21,6 +21,8 @@ def _throttle(request: Request, settings) -> None:
     """Register and login are keyed on client IP since there is no user yet.
     Without this, password guessing is unthrottled."""
     ip = request.client.host if request.client else "unknown"
+    if settings.vercel:
+        ip = request.headers.get("x-real-ip", ip)
     if not get_auth_limiter(settings.auth_attempts_per_hour).acquire(ip):
         raise RateLimitedError("Too many attempts. Try again later.")
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
-from app.core.exceptions import PdfRenderError
+from app.core.exceptions import PdfRenderError, PdfUnavailableError
 
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates"
 
@@ -19,15 +19,17 @@ _env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), autoescape=True)
 
 def render_report_pdf(report: dict) -> bytes:
     # Imported lazily: WeasyPrint needs Pango/GDK-Pixbuf/Cairo native
-    # libraries that ship via the Dockerfile's apt-get layer on Render, but
-    # are not present on a bare Windows dev machine. A module-level import
-    # would break `import app.main` for anyone who never touches PDF export.
-    # Missing native libraries surface as OSError at import time; a template
-    # or layout problem surfaces from render or write_pdf. Either way the
-    # caller gets one domain error with the cause chained for the log.
+    # libraries that ship via the Dockerfile's apt-get layer, but are not
+    # present on Vercel's Python runtime or a bare Windows dev machine. A
+    # module-level import would break `import app.main` for anyone who never
+    # touches PDF export. A missing engine is its own error so the frontend
+    # can fall back to browser print instead of offering a pointless retry;
+    # a template or layout problem surfaces from render or write_pdf.
     try:
         from weasyprint import HTML
-
+    except (ImportError, OSError) as e:
+        raise PdfUnavailableError() from e
+    try:
         css = (TEMPLATE_DIR / "report.css").read_text(encoding="utf-8")
         template = _env.get_template("report.html.j2")
         html = template.render(css=css, **report)

@@ -1574,3 +1574,47 @@ label {
     color: $color-muted;
   }
 }
+
+// Print: the PDF fallback on hosts without a PDF engine (Vercel) is the
+// browser's Save as PDF, so the report page must stand on its own on paper.
+// App chrome and buttons go, the side rail collapses, every model answer is
+// shown, and cards are kept whole across page breaks.
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .nav-bar,
+  .report-rail,
+  .report-detail__actions,
+  .question-card__toggle,
+  .resume-tips__copy {
+    display: none !important;
+  }
+
+  .app-main {
+    max-width: none;
+    padding: 0;
+  }
+
+  .report-detail__layout {
+    display: block;
+    margin-top: 1.5rem;
+  }
+
+  .question-card__answer[hidden] {
+    display: block;
+  }
+
+  .question-card,
+  .skill-gap,
+  .prep-plan li,
+  .resume-tips li {
+    break-inside: avoid;
+  }
+
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}

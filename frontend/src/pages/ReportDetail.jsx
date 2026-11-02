@@ -41,7 +41,14 @@ export default function ReportDetail() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      setActionError(messageForError(err));
+      // Hosts without a PDF engine (Vercel) answer PDF_UNAVAILABLE. The
+      // print stylesheet lays the report out for paper, so the browser's
+      // Save as PDF gives the same content.
+      if (err?.response?.data?.error?.code === "PDF_UNAVAILABLE") {
+        window.print();
+      } else {
+        setActionError(messageForError(err));
+      }
     } finally {
       setDownloading(false);
     }

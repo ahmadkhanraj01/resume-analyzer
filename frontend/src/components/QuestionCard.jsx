@@ -15,12 +15,12 @@ export default function QuestionCard({ question, intention, answer, index }) {
       <button type="button" className="question-card__toggle" onClick={() => setOpen(!open)}>
         {open ? "Hide model answer" : "Show model answer"}
       </button>
-      {open && (
-        <div className="question-card__answer">
-          <span className="question-card__answer-label">Model answer</span>
-          <p>{answer}</p>
-        </div>
-      )}
+      {/* Always rendered, hidden until opened, so a printed report still
+          carries every answer (see the print styles). */}
+      <div className="question-card__answer" hidden={!open}>
+        <span className="question-card__answer-label">Model answer</span>
+        <p>{answer}</p>
+      </div>
     </div>
   );
 }

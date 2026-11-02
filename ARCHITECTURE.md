@@ -26,13 +26,13 @@ extension).
 
 ```
                  ┌──────────────────────────┐
-                 │   React + Vite (Render)  │
+                 │   React + Vite (Vercel)  │
                  │   axios + Bearer token   │
                  └───────────┬──────────────┘
                              │  HTTPS / JSON
                              ▼
                  ┌──────────────────────────┐
-                 │   FastAPI (Render)       │
+                 │   FastAPI (Vercel)       │
                  │                          │
                  │   api/      auth,        │
                  │             interview    │
@@ -268,20 +268,25 @@ to httpOnly cookies.
 
 | Layer    | Host              | Notes                                      |
 | -------- | ----------------- | ------------------------------------------ |
-| Frontend | Render static site | static build, `VITE_API_URL` at build time |
-| Backend  | Render (Docker)    | uvicorn, single worker on free tier; runs `alembic upgrade head` on start |
-| Database | Neon (free tier)   | pooled connection string                   |
+| Frontend | Vercel (static)    | Vite build, `VITE_API_URL` at build time    |
+| Backend  | Vercel (Python)    | FastAPI function, 300 s max; migrations run by hand before deploy |
+| Database | Neon (free tier)   | pooled URL for the app, direct URL for Alembic |
+
+On Vercel there is no PDF engine (the frontend falls back to browser print)
+and rate limits live in the `rate_hits` table. The Docker image and
+`render.yaml` remain as an alternative that renders PDFs server-side.
 
 All three are free tiers, described in `render.yaml` at the repo root.
 
-**Docker matters here.** The fastembed model is baked into the image at build
-time rather than downloaded on first request. Without that, the first user after
-every cold start waits for a 100 MB download, and on a 512 MB instance it may
-simply OOM.
+**The embedding model.** In the Docker image the fastembed model is baked in at
+build time, so a 512 MB instance never downloads it. On Vercel there is no image:
+the model (about 65 MB, quantized) downloads to `/tmp` on a cold start, which the
+function's 2 GB of memory absorbs at the cost of a few seconds.
 
-**Cold starts.** Render's free tier sleeps after 15 minutes idle and takes 30 to
-50 seconds to wake. Either accept it and say so in the README, or add an
-external cron ping every 10 minutes.
+**Cold starts.** A Vercel function that has been idle starts in a few seconds
+plus that download; Neon's compute resumes in well under a second. Render's free
+tier, the Docker alternative, sleeps after 15 minutes and takes 30 to 50 seconds
+to wake.
 
 **CORS** is an explicit allowlist read from env, never `*`, because credentials
 are involved.

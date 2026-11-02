@@ -74,6 +74,15 @@ class PdfRenderError(DomainError):
     message = "The PDF could not be generated. Try again."
 
 
+class PdfUnavailableError(DomainError):
+    """The host has no PDF engine (WeasyPrint's native libraries are missing,
+    as on Vercel). Not retryable; the frontend falls back to browser print."""
+
+    code = "PDF_UNAVAILABLE"
+    status_code = 503
+    message = "PDF export is not available on this server. Use your browser's print to PDF."
+
+
 class NoSkillsFoundError(DomainError):
     code = "NO_SKILLS_FOUND"
     status_code = 422

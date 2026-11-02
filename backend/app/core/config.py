@@ -47,6 +47,12 @@ class Settings(BaseSettings):
     # Upload limits
     max_upload_bytes: int = 5 * 1024 * 1024
 
+    # Set to "1" by Vercel itself. Behind its proxy the socket peer is the
+    # proxy, so the client IP for auth throttling comes from x-real-ip, a
+    # header Vercel overwrites and clients cannot forge. Never trusted
+    # elsewhere, where any caller could send it.
+    vercel: bool = False
+
     @field_validator("jwt_secret")
     @classmethod
     def _jwt_secret_long_enough(cls, value: str) -> str:

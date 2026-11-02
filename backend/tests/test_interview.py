@@ -1,6 +1,7 @@
 """Integration tests through TestClient. The LLM call is mocked throughout;
 real extraction and real scoring run against the fixture files."""
 
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -372,3 +373,20 @@ def test_same_posting_scores_the_same_when_the_llm_answers_differently(client, a
         second = _upload_resume(client, headers).json()
     assert first["match_score"] == second["match_score"]
     assert [g["skill"] for g in first["skill_gaps"]] == [g["skill"] for g in second["skill_gaps"]]
+
+
+def test_pdf_export_reports_unavailable_when_weasyprint_is_missing(
+    client, auth_headers, monkeypatch
+):
+    # Vercel's Python runtime has no Pango/Cairo. A None entry in sys.modules
+    # makes the import fail the same way, and the frontend keys its browser
+    # print fallback off this code rather than a generic 500.
+    headers = auth_headers()
+    with _mock_llm():
+        report_id = _upload_resume(client, headers).json()["id"]
+    monkeypatch.setitem(sys.modules, "weasyprint", None)
+
+    r = client.post(f"/api/interview/{report_id}/pdf", headers=headers)
+
+    assert r.status_code == 503
+    assert r.json()["error"]["code"] == "PDF_UNAVAILABLE"

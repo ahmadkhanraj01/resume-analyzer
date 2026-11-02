@@ -25,7 +25,20 @@ export function deleteReport(id) {
 export function downloadReportPdf(id) {
   return client
     .post(`/interview/${id}/pdf`, null, { responseType: "blob" })
-    .then((r) => r.data);
+    .then((r) => r.data)
+    .catch(async (err) => {
+      // With responseType "blob" an error body arrives as a Blob too, so
+      // messageForError would never see its code. Parse it back to JSON.
+      const data = err.response?.data;
+      if (data instanceof Blob) {
+        try {
+          err.response.data = JSON.parse(await data.text());
+        } catch {
+          // Not JSON (a proxy error page, say); leave it for the fallback.
+        }
+      }
+      throw err;
+    });
 }
 
 export function suggestCareers(resume) {
