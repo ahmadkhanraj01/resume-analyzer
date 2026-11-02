@@ -3,7 +3,7 @@
 Upload a resume, paste a job description or just name the role you want,
 and get back a structured report: a deterministic match score, a per-skill
 gap analysis, edits for the resume itself, technical and behavioral
-interview questions, and a day-by-day preparation plan. Export any report as
+interview questions, and a day-by-day preparation plan. Save any report as
 a PDF. Not sure what to target? As soon as a resume is uploaded, the app
 ranks it against 36 curated role profiles and offers the best fits as
 one-click targets.
@@ -99,16 +99,20 @@ each choice is [ARCHITECTURE.md](ARCHITECTURE.md).
 | Backend    | FastAPI, SQLModel, Alembic                          |
 | Scoring    | fastembed (ONNX, `bge-small-en-v1.5`), pure Python   |
 | LLM        | Groq (primary), Gemini (fallback)                    |
-| Database   | Postgres (Supabase or Neon), SQLite for local/tests  |
-| PDF export | Jinja2 + WeasyPrint                                  |
+| Database   | Postgres on Neon, SQLite for local/tests             |
+| PDF export | Jinja2 + WeasyPrint in Docker; browser print on Vercel |
 | Frontend   | React + Vite, react-router, axios                    |
 | Auth       | JWT bearer token (not cookies; see ARCHITECTURE.md)  |
+| Hosting    | Vercel (API and frontend) + Neon, all free tiers     |
 
 ## Project status
 
-Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
+Every phase in [PHASES.md](PHASES.md) is implemented, tested, and deployed:
 
-- Backend: 119 tests passing. PDF rendering tests skip themselves on a
+- **Live** on Vercel and Neon since 2026-11-02 (links at the top). Sign-up,
+  career suggestions, a full analysis, history, and the print fallback were
+  checked against production, and the live score matched the local one.
+- Backend: 126 tests passing. PDF rendering tests skip themselves on a
   machine without WeasyPrint's native libraries; see
   [Running tests](#running-tests).
 - Frontend: builds cleanly, lints cleanly.
@@ -117,12 +121,12 @@ Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
   Gemini-fallback run), not just mocked. Model defaults are `openai/gpt-oss-120b`
   and `gemini-3.6-flash`. Both provider catalogs move fast, so if either
   starts returning 404s, that model has likely been retired; check the
-  provider's current model list and update `backend/.env`.
+  provider's current model list and update `backend/.env` (and the Vercel
+  project's environment variables).
 - Scoring has been checked against three real resumes across a dozen
   role targets (Phase 10). That is what moved the partial threshold to 0.62
   and anchored the credit curve; it is still a small set, and the 20-pair
   calibration in `DESIGN.md` remains open.
-- Not yet done: an actual deploy to Render and Neon.
 
 ## Running it locally
 
@@ -139,30 +143,33 @@ Every phase in [PHASES.md](PHASES.md) is implemented and tested locally:
 ```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\activate       # Windows; use `source .venv/bin/activate` on macOS/Linux
+source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-copy .env.example .env       # then fill in JWT_SECRET, GROQ_API_KEY, GEMINI_API_KEY
+cp .env.example .env         # Windows: copy; then fill in JWT_SECRET, GROQ_API_KEY, GEMINI_API_KEY
 uvicorn main:app --reload
 ```
 
-The API is now at `http://localhost:8000`. With `DATABASE_URL` left at its
-SQLite default, tables are created automatically on startup; against a real
-Postgres URL, run migrations instead:
+The API is now at `http://localhost:8000`. Leave `DATABASE_URL` unset (or
+at `sqlite:///./dev.db`) for local work: tables are created and new columns
+added automatically on startup. Against Postgres, run migrations instead,
+over a direct (non-pooled) connection if you use Neon:
 
 ```bash
-alembic upgrade head
+DATABASE_URL_UNPOOLED=<direct connection string> alembic upgrade head
 ```
 
-The first analysis request downloads the fastembed model (~130 MB) if it
-isn't already cached; the Docker image bakes this in at build time so
-production never pays that cost.
+Keep production connection strings out of `DATABASE_URL` in your local
+`.env`, or local testing writes into the live database.
+
+The app downloads the fastembed model (about 65 MB) on its first start if
+it isn't already cached; the Docker image bakes it in at build time.
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-copy .env.example .env.local   # VITE_API_URL, defaults to http://localhost:8000/api
+cp .env.example .env.local     # optional; VITE_API_URL defaults to http://localhost:8000/api
 npm run dev
 ```
 
@@ -174,7 +181,7 @@ Once the one-time setup above is done, starting both servers is just:
 
 ```bash
 # terminal 1, from backend/
-.venv\Scripts\activate
+source .venv/bin/activate     # Windows: .venv\Scripts\activate
 uvicorn main:app --reload
 
 # terminal 2, from frontend/
@@ -270,8 +277,14 @@ which runs migrations on container start and renders PDFs server-side.
 - **Curated role profiles are a starting set.** 36 roles, drafted by the
   LLM once and reviewed by hand. Expect a few false positives from ordinary
   words as real resumes come through, and fix them in the JSON, not in code.
-- **Rate limiting is in-process**, correct for a single Render instance,
-  wrong the moment a second worker exists (see `app/core/limiter.py`).
+- **PDF export on the live site is the browser's Save as PDF.** Vercel has
+  no PDF engine, so "Download PDF" opens the print dialog with a print
+  stylesheet. Self-hosting the Docker image gives server-rendered PDFs.
+- **Cold starts.** After a quiet spell the API takes a few extra seconds to
+  start (Python plus the embedding model), and Neon resumes its compute.
+- **Rate limits fail open.** They live in Postgres (`rate_hits`); if that
+  check errors, the request is allowed and a warning is logged, so a
+  database blip never locks users out.
 - **Resume edits are suggestions, not a new file.** The app tells you which
   keywords to add and how to reword lines; you copy them into your own
   resume. It does not generate or edit the document.
